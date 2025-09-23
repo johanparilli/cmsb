@@ -3,39 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CMSB - Bienvenida</title>
-    <!-- Estilo CSS simple para un diseño limpio -->
+    <title>CMSB - Prof Johan Parilli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
         body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-            color: #333;
-            text-align: center;
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
         }
-        .container {
-            padding: 2rem;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .bg-custom-dark {
+            background-color: #0f172a;
         }
-        h1 {
-            color: #2c3e50;
-        }
-        p {
-            font-size: 1.2rem;
+        .text-custom-gold {
+            color: #facc15;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <h1>¡Bienvenido a CMSB!</h1>
-        <p>Esta es la página de inicio para tu nuevo sitio web en el subdominio **cmsb.johanparilli.com**.</p>
-        <p>Puedes reemplazar este contenido con tus propios archivos HTML, CSS y JavaScript.</p>
-    </div>
+<body class="text-slate-800">
+
+    <!-- Header -->
+    <header class="bg-custom-dark text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
+            <h1 class="text-3xl font-extrabold mb-2 md:mb-0">Cátedras del Prof.Johan Parilli</h1>
+            <nav>
+                <ul class="flex space-x-6 text-sm font-semibold">
+                    <li><a href="#inicio" class="text-custom-gold hover:text-white transition-colors">Inicio</a></li>
+                    <li><a href="#catedras" class="hover:text-custom-gold transition-colors">Cátedras</a></li>
+                    <li><a href="#contacto" class="hover:text-custom-gold transition-colors">Contacto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="inicio" class="bg-slate-900 text-white py-20 md:py-32">
+            <div class="container mx-auto px-4 text-center">
+                <h2 class="text-4xl md:text-6xl font-black text-custom-gold mb-4">
+                    Conservatorio de Música Simón Bolívar
+                </h2>
+                <p class="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
+                    Acceso a los espacios virtuales de Lenguaje Musical y Texturas Musicales.
+                </p>
+                <a href="#catedras" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105">
+                    Explora Ahora
+                </a>
+            </div>
+        </section>
+        
+        <!-- Cátedras Section -->
+        <section id="catedras" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4">
+                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Lenguaje Musical Card -->
+                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical</h4>
+                        <p class="text-gray-600">
+                            Descubre los fundamentos de la teoría musical, la lectura a primera vista y el desarrollo auditivo. Prepara tu mente para comprender la música a un nivel más profundo.
+                        </p>
+                    </div>
+                    <!-- Armonía Card -->
+                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Armonía</h4>
+                        <p class="text-gray-600">
+                            Aprende a construir acordes y progresiones, y explora la relación entre las notas para crear estructuras musicales ricas y expresivas.
+                        </p>
+                    </div>
+                    <!-- Contrapunto Card -->
+                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Contrapunto</h4>
+                        <p class="text-gray-600">
+                            Domina el arte de combinar dos o más líneas melódicas independientes para crear texturas complejas y bellas. Un pilar fundamental en la composición.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action Section -->
+        <section class="bg-custom-dark text-white py-12 md:py-20 text-center">
+            <div class="container mx-auto px-4">
+                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-custom-gold">¿Tienes alguna pregunta?</h3>
+                <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8 text-slate-300">
+                    Ponte en contacto para obtener más información o aclarar cualquier duda sobre las clases.
+                </p>
+                <button onclick="document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105">
+                    Contáctanos
+                </button>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contacto" class="py-16 md:py-24 bg-gray-100">
+            <div class="container mx-auto px-4">
+                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Contacto</h3>
+                <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf6mYdXRqSAyycwrLGgsuNfg4dqmPDH2NzSOFsKuNHEsfoDvQ/viewform?embedded=true" width="100%" height="896" frameborder="0" marginheight="0" marginwidth="0">Cargando…</iframe>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-custom-dark text-white py-6 mt-12">
+        <div class="container mx-auto px-4 text-center text-sm">
+            <p>&copy; 2025 Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
 </body>
 </html>
