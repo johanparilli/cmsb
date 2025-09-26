@@ -17,18 +17,25 @@
         .text-custom-gold {
             color: #facc15;
         }
+        /* Estilo para asegurar que el iframe se vea bien */
+        .iframe-container {
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
     </style>
 </head>
 <body class="text-slate-800">
 
     <!-- Header -->
-    <header class="bg-custom-dark text-white py-6 shadow-lg">
+    <header class="bg-custom-dark text-white py-6 shadow-lg sticky top-0 z-10">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
             <h1 class="text-3xl font-extrabold mb-2 md:mb-0">Cátedras del Prof.Johan Parilli</h1>
             <nav>
                 <ul class="flex space-x-6 text-sm font-semibold">
                     <li><a href="#inicio" class="text-custom-gold hover:text-white transition-colors">Inicio</a></li>
                     <li><a href="#catedras" class="hover:text-custom-gold transition-colors">Cátedras</a></li>
+                    <li><a href="#encuesta" class="hover:text-custom-gold transition-colors font-bold">Encuesta</a></li>
                     <li><a href="#contacto" class="hover:text-custom-gold transition-colors">Contacto</a></li>
                 </ul>
             </nav>
@@ -55,26 +62,56 @@
         <section id="catedras" class="py-16 md:py-24 bg-white">
             <div class="container mx-auto px-4">
                 <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <!-- Lenguaje Musical Card -->
-                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
-                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical</h4>
+                <!-- Se cambió la cuadrícula para un mejor flujo visual de 5 elementos en dispositivos grandes -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    
+                    <!-- Lenguaje Musical 1 Card -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 1</h4>
                         <p class="text-gray-600">
-                            Descubre los fundamentos de la teoría musical, la lectura a primera vista y el desarrollo auditivo. Prepara tu mente para comprender la música a un nivel más profundo.
+                            Descubre los fundamentos de la teoría musical, la lectura y el desarrollo auditivo. Prepárate para comprender la música a un nivel más profundo.
                         </p>
                         <!-- Botón de acceso -->
                         <div class="mt-4">
-                            <!-- Nota: Cambia la URL si es diferente -->
                             <a href="https://clases.johanparilli.com/b/lenguajemusical1" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
                                 Acceder
                             </a>
                         </div>
                     </div>
-                    <!-- Armonía Card -->
-                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+
+                    <!-- Lenguaje Musical 2 Card (NUEVO) -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 2</h4>
+                        <p class="text-gray-600">
+                            Amplía tus habilidades de lectura, audición y entonación. Enfocado en ritmos complejos, ornamentaciones y la comprensión de estructuras formales.
+                        </p>
+                        <!-- Botón de acceso -->
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/lenguajemusical2" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
+                                Acceder
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Lenguaje Musical 3 Card (NUEVO) -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 3</h4>
+                        <p class="text-gray-600">
+                            Nivel avanzado de solfeo y análisis auditivo. Profundización en armonías diatónicas y cromáticas, y lectura de partituras complejas.
+                        </p>
+                        <!-- Botón de acceso -->
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/lenguajemusical3" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
+                                Acceder
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Textura Musical 1 Card -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
                         <h4 class="text-2xl font-bold text-custom-dark mb-2">Textura Musical 1</h4>
                         <p class="text-gray-600">
-                            Aprende a construir acordes y progresiones, y explora la relación entre las notas para crear estructuras musicales ricas y expresivas.
+                            Analiza, comprende y maneja las reglas de los distintos períodos de la armonía tonal, desde sus bases hasta las modulaciones complejas.
                         </p>
                         <!-- Botón de acceso -->
                         <div class="mt-4">
@@ -83,43 +120,62 @@
                             </a>
                         </div>
                     </div>
-                    <!-- Contrapunto Card -->
-                    <div class="bg-slate-50 p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+
+                    <!-- Textura Musical 2 Card -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
                         <h4 class="text-2xl font-bold text-custom-dark mb-2">Textura Musical 2</h4>
                         <p class="text-gray-600">
-                            Domina el arte de combinar dos o más líneas melódicas independientes para crear texturas complejas y bellas. Un pilar fundamental en la composición.
+                            Analiza, comprende y maneja las reglas del contrapunto y del estudio del estilo polifónico. Desarrolla la independencia de voces melódicas.
                         </p>
                         <!-- Botón de acceso -->
                         <div class="mt-4">
-                            <!-- Nota: Cambia la URL si es diferente -->
                             <a href="https://clases.johanparilli.com/b/texturamusical2" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
                                 Acceder
                             </a>
                         </div>
                     </div>
+
                 </div>
             </div>
         </section>
-
-        <!-- Call to Action Section -->
-        <section class="bg-custom-dark text-white py-12 md:py-20 text-center">
+        
+        <!-- Sección de Encuesta (BANNER DESTACADO para enlace externo) -->
+        <section id="encuesta" class="bg-custom-dark text-white py-12 md:py-20 text-center shadow-xl">
             <div class="container mx-auto px-4">
-                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-custom-gold">¿Tienes alguna pregunta?</h3>
+                <h3 class="text-3xl md:text-4xl font-bold mb-4 text-custom-gold">
+                    ¡IMPORTANTE! </br>Llena la Encuesta de Inicio de Clases
+                </h3>
                 <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8 text-slate-300">
-                    Ponte en contacto para obtener más información o aclarar cualquier duda sobre las clases.
+                    Ayúdanos a prepararnos mejor para el nuevo ciclo académico. Haz clic abajo para acceder al formulario externo.
                 </p>
-                <button onclick="document.getElementById('contacto').scrollIntoView({ behavior: 'smooth' });" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105">
-                    Contáctanos
-                </button>
+                <!-- NOTA: Cambia el '#' por la URL de la otra página cuando esté lista (ej: href="encuesta.html") -->
+                <a href="#" class="bg-custom-gold text-slate-900 font-black py-3 px-10 rounded-lg shadow-2xl hover:bg-yellow-300 transition-colors transform hover:scale-105 inline-flex items-center space-x-2 text-lg">
+                    <span>Acceder a la Encuesta</span>
+                    <!-- Icono de formulario (lucide-react equivalente) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="15" y1="15" x2="9" y2="15"></line></svg>
+                </a>
             </div>
         </section>
 
-        <!-- Contact Section -->
-        <section id="contacto" class="py-16 md:py-24 bg-gray-100">
+        <!-- Contact Section (Contiene el formulario de Google Forms de contacto) -->
+        <section id="contacto" class="py-16 md:py-24 bg-gray-200">
             <div class="container mx-auto px-4">
-                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Contacto</h3>
-                <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md">
-                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf6mYdXRqSAyycwrLGgsuNfg4dqmPDH2NzSOFsKuNHEsfoDvQ/viewform?embedded=true" width="100%" height="896" frameborder="0" marginheight="0" marginwidth="0">Cargando…</iframe>
+                <h3 class="text-3xl md:text-4xl font-bold text-center mb-6 text-slate-900">Formulario de Contacto y Consultas</h3>
+                <p class="text-center text-lg text-slate-700 mb-8 max-w-3xl mx-auto">
+                    Si tienes preguntas específicas sobre las asignaturas o necesitas contactar al profesor, puedes hacerlo a través del siguiente formulario.
+                </p>
+                <div class="iframe-container bg-white p-4 md:p-8 rounded-xl shadow-2xl border border-gray-300">
+                    <!-- Formulario de Google Forms para CONTACTO (restaurado) -->
+                    <iframe 
+                        src="https://docs.google.com/forms/d/e/1FAIpQLSf6mYdXRqSAyycwrLGgsuNfg4dqmPDH2NzSOFsKuNHEsfoDvQ/viewform?embedded=true" 
+                        width="100%" 
+                        height="896" 
+                        frameborder="0" 
+                        marginheight="0" 
+                        marginwidth="0"
+                        title="Formulario de Contacto del Profesor">
+                        Cargando…
+                    </iframe>
                 </div>
             </div>
         </section>
@@ -134,4 +190,3 @@
 
 </body>
 </html>
-
