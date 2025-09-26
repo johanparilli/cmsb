@@ -6,7 +6,7 @@
     <title>CMSB - Prof Johan Parilli</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
@@ -16,6 +16,12 @@
         }
         .text-custom-gold {
             color: #facc15;
+        }
+        /* Clase CSS para FORZAR la visibilidad inmediata del botón de la encuesta */
+        .encuesta-btn-visible {
+            background-color: #facc15 !important; /* Fondo Dorado Forzado */
+            color: #000000 !important; /* Texto Negro Forzado */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.4) !important; /* Sombra oscura para mayor relieve */
         }
         /* Estilo para asegurar que el iframe se vea bien */
         .iframe-container {
@@ -35,7 +41,7 @@
                 <ul class="flex space-x-6 text-sm font-semibold">
                     <li><a href="#inicio" class="text-custom-gold hover:text-white transition-colors">Inicio</a></li>
                     <li><a href="#catedras" class="hover:text-custom-gold transition-colors">Cátedras</a></li>
-                    <li><a href="#encuesta" class="hover:text-custom-gold transition-colors font-bold">Encuesta</a></li>
+                    <li><a href="#encuesta" class="hover:text-custom-gold transition-colors font-extrabold">Encuesta</a></li>
                     <li><a href="#contacto" class="hover:text-custom-gold transition-colors">Contacto</a></li>
                 </ul>
             </nav>
@@ -62,7 +68,7 @@
         <section id="catedras" class="py-16 md:py-24 bg-white">
             <div class="container mx-auto px-4">
                 <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
-                <!-- Se cambió la cuadrícula para un mejor flujo visual de 5 elementos en dispositivos grandes -->
+                <!-- Ajuste a grid-cols-2/3 para 6 elementos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     
                     <!-- Lenguaje Musical 1 Card -->
@@ -79,7 +85,7 @@
                         </div>
                     </div>
 
-                    <!-- Lenguaje Musical 2 Card (NUEVO) -->
+                    <!-- Lenguaje Musical 2 Card -->
                     <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
                         <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 2</h4>
                         <p class="text-gray-600">
@@ -93,7 +99,7 @@
                         </div>
                     </div>
 
-                    <!-- Lenguaje Musical 3 Card (NUEVO) -->
+                    <!-- Lenguaje Musical 3 Card -->
                     <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
                         <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 3</h4>
                         <p class="text-gray-600">
@@ -102,6 +108,21 @@
                         <!-- Botón de acceso -->
                         <div class="mt-4">
                             <a href="https://clases.johanparilli.com/b/lenguajemusical3" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
+                                Acceder
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Lenguaje Musical 4 Card (NUEVO) -->
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 4</h4>
+                        <p class="text-gray-600">
+                            Estudio de la música contemporánea, lectura a vista en claves no convencionales y desarrollo avanzado de dictados melódicos y armónicos.
+                        </p>
+                        <!-- Botón de acceso -->
+                        <div class="mt-4">
+                            <!-- Nota: Enlace asumido para el nivel 4 -->
+                            <a href="https://clases.johanparilli.com/b/lenguajemusical4" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
                                 Acceder
                             </a>
                         </div>
@@ -148,8 +169,15 @@
                 <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8 text-slate-300">
                     Ayúdanos a prepararnos mejor para el nuevo ciclo académico. Haz clic abajo para acceder al formulario externo.
                 </p>
-                <!-- NOTA: Cambia el '#' por la URL de la otra página cuando esté lista (ej: href="encuesta.html") -->
-                <a href="#" class="bg-custom-gold text-slate-900 font-black py-3 px-10 rounded-lg shadow-2xl hover:bg-yellow-300 transition-colors transform hover:scale-105 inline-flex items-center space-x-2 text-lg">
+                <!-- NOTA: Se aplica la clase visible-button para forzar la visibilidad de los colores -->
+                <a href="#" class="
+                    encuesta-btn-visible 
+                    font-black 
+                    py-3 px-10 
+                    rounded-lg 
+                    inline-flex items-center space-x-2 
+                    text-lg 
+                ">
                     <span>Acceder a la Encuesta</span>
                     <!-- Icono de formulario (lucide-react equivalente) -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="15" y1="15" x2="9" y2="15"></line></svg>
