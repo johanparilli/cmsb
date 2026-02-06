@@ -7,14 +7,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
+        
         /* Color principal: azul oscuro de Tailwind slate-900 */
         .bg-custom-dark {
             background-color: #0f172a;
         }
+        
         /* Color de acento: dorado de Tailwind amber-400 */
         .text-custom-gold {
             color: #facc15;
@@ -41,7 +44,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 flex flex-col min-h-screen">
 
     <!-- Header / Encabezado -->
     <header class="bg-custom-dark text-white py-6 shadow-lg sticky top-0 z-10">
@@ -58,7 +61,7 @@
         </div>
     </header>
 
-    <main>
+    <main class="flex-grow">
         <!-- Hero Section / Sección Principal -->
         <section id="inicio" class="bg-slate-900 text-white py-20 md:py-32">
             <div class="container mx-auto px-4 text-center">
@@ -68,70 +71,42 @@
                 <p class="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
                     Acceso a los espacios virtuales del profesor Johan Parilli.
                 </p>
-                <a href="#catedras" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105">
+                <a href="#catedras" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105 inline-block">
                     Explora Ahora
                 </a>
             </div>
         </section>
         
-        <!-- Cátedras Section / Sección de Asignaturas (Solo Lenguaje Musical 1-4) -->
+        <!-- Cátedras Section / Sección de Asignaturas (Solo Lenguaje Musical 1 Secciones E y F) -->
         <section id="catedras" class="py-16 md:py-24 bg-white">
             <div class="container mx-auto px-4">
-                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas </h3>
-                <!-- Grid para 4 elementos: 2 columnas en pantallas medianas y grandes -->
+                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
+                <!-- Grid para 2 elementos -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                     
-                    <!-- Lenguaje Musical 1 Card -->
+                    <!-- Lenguaje Musical 1 Sección E Card -->
                     <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
-                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 1</h4>
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 1 Sección E</h4>
                         <p class="text-gray-600">
                             Descubre los fundamentos de la teoría musical, la lectura y el desarrollo auditivo.
                         </p>
-                        <!-- Botón de acceso - Se añadió target="_blank" -->
+                        <!-- Botón de acceso -->
                         <div class="mt-4">
-                            <a href="https://clases.johanparilli.com/b/lenguaje1 " target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
+                            <a href="https://t.me/+cCfASiBGA3Q1ODlh" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
                                 Acceder
                             </a>
                         </div>
                     </div>
 
-                    <!-- Lenguaje Musical 2 Card -->
+                    <!-- Lenguaje Musical 1 Sección F Card -->
                     <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
-                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 2</h4>
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 1 Sección F</h4>
                         <p class="text-gray-600">
-                            Amplía tus habilidades de lectura, audición y entonación.
+                            Descubre los fundamentos de la teoría musical, la lectura y el desarrollo auditivo.
                         </p>
-                        <!-- Botón de acceso - Se añadió target="_blank" -->
+                        <!-- Botón de acceso -->
                         <div class="mt-4">
-                            <a href="https://clases.johanparilli.com/b/lenguaje2 " target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
-                                Acceder
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Historia de la música 1 Card -->
-                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
-                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Historia de la música 1</h4>
-                        <p class="text-gray-600">
-                            Explora el origen y evolución de la música desde sus raíces hasta el renacimiento.
-                        </p>
-                        <!-- Botón de acceso - Se añadió target="_blank" -->
-                        <div class="mt-4">
-                            <a href=" https://clases.johanparilli.com/b/historia1" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
-                                Acceder
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Textura Musical 1 Card -->
-                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
-                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Textura Musical 1</h4>
-                        <p class="text-gray-600">
-                            Estudio de la armonía a nivel más avanzado.
-                        </p>
-                        <!-- Botón de acceso - Se añadió target="_blank" -->
-                        <div class="mt-4">
-                            <a href="https://clases.johanparilli.com/b/texturamusical1" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
+                            <a href="https://t.me/+cCfASiBGA3Q1ODlh" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
                                 Acceder
                             </a>
                         </div>
@@ -194,9 +169,14 @@
     <!-- Footer / Pie de página -->
     <footer class="bg-custom-dark text-white py-6 mt-12">
         <div class="container mx-auto px-4 text-center text-sm">
-            <p>&copy; 2025 Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli. Todos los derechos reservados.</p>
+            <p>&copy; <span id="current-year"></span> Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <script>
+        // Script para actualizar el año automáticamente
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
 
 </body>
 </html>
