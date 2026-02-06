@@ -7,16 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Fondo general claro */
         }
+        
+        /* Colores personalizados */
         .bg-custom-dark {
-            background-color: #0f172a;
+            background-color: #0f172a; /* Slate 900 */
         }
+        
         .text-custom-gold {
-            color: #facc15;
+            color: #facc15; /* Yellow 400 */
         }
+        
         /* Estilo para asegurar que el iframe se vea bien */
         .iframe-container {
             /* Se mantiene el ancho máximo de 800px para centrar el formulario */
@@ -26,7 +31,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 flex flex-col min-h-screen">
 
     <!-- Header (Similar al Index) -->
     <header class="bg-custom-dark text-white py-6 shadow-lg">
@@ -40,19 +45,22 @@
         </div>
     </header>
 
-    <main>
+    <main class="flex-grow">
         <!-- Encuesta Principal Section -->
-        <section class="py-16 md:py-24 bg-white min-h-screen">
+        <section class="py-16 md:py-24 bg-white">
             <div class="container mx-auto px-4">
-                <h2 class="text-4xl md:text-5xl font-black text-center mb-4 text-custom-dark">
-                    Encuesta de Inicio de Clases
-                </h2>
-                <p class="text-center text-xl text-slate-600 mb-12 max-w-4xl mx-auto">
-                    Tu opinión es fundamental para organizar y adaptar el contenido al inicio del nuevo periodo académico. Por favor, rellena el siguiente formulario con tus datos.
-                </p>
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-black mb-4 text-custom-dark">
+                        Encuesta de Inicio de Clases
+                    </h2>
+                    <p class="text-xl text-slate-600 max-w-4xl mx-auto">
+                        Tu opinión es fundamental para organizar y adaptar el contenido al inicio del nuevo periodo académico. Por favor, rellena el siguiente formulario con tus datos.
+                    </p>
+                </div>
                 
-                <div class="iframe-container bg-gray-100 p-4 md:p-8 rounded-xl shadow-2xl border border-gray-300">
-                    <!-- Formulario de Google Forms para la ENCUESTA (ACTUALIZADO) -->
+                <div class="iframe-container bg-gray-50 p-2 md:p-8 rounded-xl shadow-2xl border border-gray-300">
+                    <!-- Formulario de Google Forms para la ENCUESTA -->
+                    <!-- Nota: Ajustar la altura (height) si el formulario cambia de longitud -->
                     <iframe 
                         src="https://docs.google.com/forms/d/e/1FAIpQLScdduz3oNGsdkQPhy0VkOUhtkVOA7PnpxEtAuOboXDWtmhITQ/viewform?embedded=true" 
                         width="100%" 
@@ -60,13 +68,14 @@
                         frameborder="0" 
                         marginheight="0" 
                         marginwidth="0"
-                        title="Formulario de Encuesta de Inicio de Clases">
+                        title="Formulario de Encuesta de Inicio de Clases"
+                        class="w-full">
                         Cargando…
                     </iframe>
                 </div>
 
                 <div class="text-center mt-12">
-                    <a href="https://cmsb.johanparilli.com/" class="bg-custom-dark text-white font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-slate-700 transition-colors">
+                    <a href="https://cmsb.johanparilli.com/" class="inline-block bg-custom-dark text-white font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-slate-700 transition-colors hover:-translate-y-1 transform duration-200">
                         Volver a la Página Principal
                     </a>
                 </div>
@@ -75,11 +84,16 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-custom-dark text-white py-6">
+    <footer class="bg-custom-dark text-white py-6 mt-auto">
         <div class="container mx-auto px-4 text-center text-sm">
-            <p>&copy; 2025 Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli.</p>
+            <p>&copy; <span id="current-year"></span> Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli.</p>
         </div>
     </footer>
+
+    <script>
+        // Script para actualizar el año automáticamente
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+    </script>
 
 </body>
 </html>
