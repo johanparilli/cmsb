@@ -17,7 +17,6 @@
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Exponemos Firebase al objeto window para que React pueda acceder de forma segura
         window.FB = { 
             initializeApp, getAuth, signInAnonymously, onAuthStateChanged, 
             signInWithCustomToken, getFirestore, collection, addDoc, onSnapshot, 
@@ -37,9 +36,8 @@
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
 
-        // --- ICONOS SVG INTEGRADOS ---
+        // --- ICONOS SVG ---
         const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
-        const IconRotateCcw = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>;
         const IconCheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
         const IconAlertCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
         const IconChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
@@ -50,17 +48,31 @@
         const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>;
 
         // --- CONFIGURACIÓN DE FIREBASE ---
-        // Se intenta cargar la configuración del entorno Canvas; si no existe (GitHub), se usa la manual.
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "", // RELLENAR PARA GITHUB
-                authDomain: "TU_PROYECTO.firebaseapp.com",
-                projectId: "TU_PROYECTO",
-                storageBucket: "TU_PROYECTO.appspot.com",
-                messagingSenderId: "TU_SENDER_ID",
-                appId: "TU_APP_ID"
-            };
+        // 1. Aquí pones tus datos si estás en GitHub
+        const githubConfig = {
+            apiKey: "PEGA_AQUÍ_TU_API_KEY",
+            authDomain: "TU_PROYECTO.firebaseapp.com",
+            projectId: "TU_PROYECTO",
+            storageBucket: "TU_PROYECTO.appspot.com",
+            messagingSenderId: "TU_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // 2. Lógica inteligente para detectar el entorno
+        let firebaseConfig;
+        let isProduction = false;
+
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                firebaseConfig = JSON.parse(__firebase_config);
+            } else {
+                firebaseConfig = githubConfig;
+                isProduction = true;
+            }
+        } catch (e) {
+            firebaseConfig = githubConfig;
+            isProduction = true;
+        }
 
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'music-dictation-github';
 
@@ -74,9 +86,9 @@
                     type: "metronome",
                     params: { beats: 3 },
                     answerOptions: [
-                        { text: "Binaria (2/4)", isCorrect: false, rationale: "La métrica binaria se siente como un paso (1-2); aquí escuchas 1-2-3." },
-                        { text: "Ternaria (3/4)", isCorrect: true, rationale: "El ciclo de un pulso fuerte y dos débiles define el 3/4." },
-                        { text: "Cuaternaria (4/4)", isCorrect: false, rationale: "No se percibe el acento secundario del tercer tiempo de un 4/4." }
+                        { text: "Binaria (2/4)", isCorrect: false },
+                        { text: "Ternaria (3/4)", isCorrect: true },
+                        { text: "Cuaternaria (4/4)", isCorrect: false }
                     ],
                     hint: "Cuenta '1, 2, 3' siguiendo el golpe más agudo."
                 },
@@ -87,9 +99,9 @@
                     type: "rhythm",
                     params: { pattern: [1, 1, 0.5, 0.5, 0.25, 0.25, 0.25, 0.25] },
                     answerOptions: [
-                        { text: "Cuatro Semicorcheas y una Negra", isCorrect: false, rationale: "El ritmo escuchado tiene una subdivisión de corcheas antes de las semicorcheas." },
-                        { text: "Dos Corcheas y cuatro Semicorcheas", isCorrect: true, rationale: "Escuchaste 'ti-ti' seguido de 'taka-taka'." },
-                        { text: "Una Blanca", isCorrect: false, rationale: "La blanca es un sonido único; aquí hubo 6 ataques en el compás." }
+                        { text: "Cuatro Semicorcheas y una Negra", isCorrect: false },
+                        { text: "Dos Corcheas y cuatro Semicorcheas", isCorrect: true },
+                        { text: "Una Blanca", isCorrect: false }
                     ],
                     hint: "Siente cómo el ritmo se vuelve más rápido al final."
                 },
@@ -130,72 +142,7 @@
                         { text: "Escala Mayor", isCorrect: true },
                         { text: "Escala Pentatónica", isCorrect: false }
                     ],
-                    hint: "Es la escala clásica de Do Mayor."
-                },
-                {
-                    questionNumber: 6,
-                    category: "BLOQUE ARMÓNICO",
-                    question: "Escucha el acorde. ¿Cuál es su cualidad?",
-                    type: "chord",
-                    params: { notes: [261.63, 329.63, 392.00] },
-                    answerOptions: [
-                        { text: "Tríada Mayor", isCorrect: true },
-                        { text: "Tríada Menor", isCorrect: false },
-                        { text: "Tríada Disminuida", isCorrect: false }
-                    ],
-                    hint: "Suena estable y brillante."
-                },
-                {
-                    questionNumber: 7,
-                    category: "ACORDES",
-                    question: "Identifica la cualidad de este acorde.",
-                    type: "chord",
-                    params: { notes: [261.63, 311.13, 369.99] },
-                    answerOptions: [
-                        { text: "Tríada Mayor", isCorrect: false },
-                        { text: "Tríada Disminuida", isCorrect: true },
-                        { text: "Tríada Aumentada", isCorrect: false }
-                    ],
-                    hint: "Suena como música de suspenso."
-                },
-                {
-                    questionNumber: 8,
-                    category: "DISCRIMINACIÓN DE NOTAS",
-                    question: "¿Cuál es la dirección de esta melodía?",
-                    type: "melody",
-                    params: { notes: [392.00, 329.63, 261.63] },
-                    answerOptions: [
-                        { text: "Ascendente", isCorrect: false },
-                        { text: "Descendente", isCorrect: true },
-                        { text: "Quebrada", isCorrect: false }
-                    ],
-                    hint: "¿La última nota es más grave que la primera?"
-                },
-                {
-                    questionNumber: 9,
-                    category: "CADENCIAS",
-                    question: "Escucha estos dos acordes. ¿Qué sensación producen?",
-                    type: "cadence",
-                    params: { chords: [[392.00, 493.88, 587.33], [523.25, 659.25, 783.99]] },
-                    answerOptions: [
-                        { text: "Suspenso", isCorrect: false },
-                        { text: "Reposo Total", isCorrect: true },
-                        { text: "Engaño", isCorrect: false }
-                    ],
-                    hint: "¿Parece que la música 'llegó a casa'?"
-                },
-                {
-                    questionNumber: 10,
-                    category: "DICTADO FINAL",
-                    question: "¿Qué nota es la que se repite en este fragmento?",
-                    type: "melody",
-                    params: { notes: [261.63, 293.66, 261.63, 329.63, 261.63] },
-                    answerOptions: [
-                        { text: "La más aguda", isCorrect: false },
-                        { text: "La nota pedal (Tónica)", isCorrect: true },
-                        { text: "Ninguna se repite", isCorrect: false }
-                    ],
-                    hint: "Fíjate en la nota con la que empieza."
+                    hint: "Suena brillante y estable."
                 }
             ]
         };
@@ -203,7 +150,7 @@
         function App() {
             const [user, setUser] = useState(null);
             const [db, setDb] = useState(null);
-            const [currentStep, setCurrentStep] = useState('start'); 
+            const [currentStep, setCurrentStep] = useState('loading'); 
             const [studentName, setStudentName] = useState('');
             const [currentQuestion, setCurrentQuestion] = useState(0);
             const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -216,33 +163,40 @@
             
             const audioCtx = useRef(null);
 
-            // Inicializar Firebase con protección de claves
             useEffect(() => {
-                const interval = setInterval(() => {
-                    if (window.FB) {
-                        clearInterval(interval);
-                        const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.FB;
-                        try {
-                            const app = initializeApp(firebaseConfig);
-                            const auth = getAuth(app);
-                            const firestore = getFirestore(app);
-                            setDb(firestore);
-
-                            const initAuth = async () => {
-                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                                    await signInWithCustomToken(auth, __initial_auth_token);
-                                } else {
-                                    await signInAnonymously(auth);
-                                }
-                            };
-                            initAuth();
-                            onAuthStateChanged(auth, setUser);
-                        } catch (e) { console.error("Firebase Initialization Error:", e); }
+                const init = async () => {
+                    if (!window.FB) return;
+                    
+                    // Si estamos en producción (GitHub) y no hay API Key, lanzamos error visual
+                    if (isProduction && (!firebaseConfig.apiKey || firebaseConfig.apiKey.includes("PEGA_AQUÍ"))) {
+                        setCurrentStep('config_error');
+                        return;
                     }
-                }, 100);
+
+                    const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.FB;
+                    try {
+                        const app = initializeApp(firebaseConfig);
+                        const auth = getAuth(app);
+                        const firestore = getFirestore(app);
+                        setDb(firestore);
+
+                        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                            await signInWithCustomToken(auth, __initial_auth_token);
+                        } else {
+                            await signInAnonymously(auth);
+                        }
+                        onAuthStateChanged(auth, setUser);
+                        setCurrentStep('start');
+                    } catch (e) {
+                        console.error(e);
+                        setCurrentStep('config_error');
+                    }
+                };
+                
+                const timer = setTimeout(init, 500);
+                return () => clearTimeout(timer);
             }, []);
 
-            // Escuchar resultados (Panel Profesor) siguiendo la Regla 1 y 2
             useEffect(() => {
                 if (!db || !user || currentStep !== 'teacher') return;
                 const { collection, onSnapshot } = window.FB;
@@ -250,9 +204,8 @@
                 
                 const unsubscribe = onSnapshot(q, (snapshot) => {
                     const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    // Ordenamos en memoria para evitar errores de índices complejos en Firestore
                     setSubmissions(docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-                }, (error) => console.error("Snapshot Error:", error));
+                });
                 return () => unsubscribe();
             }, [db, user, currentStep]);
 
@@ -299,10 +252,6 @@
                         q.params.notes.forEach((freq, i) => playTone(freq, 0.5, now + (i * 0.6)));
                         totalDuration = q.params.notes.length * 0.6;
                         break;
-                    case 'chord':
-                        q.params.notes.forEach(freq => playTone(freq, 1.6, now));
-                        totalDuration = 1.6;
-                        break;
                     case 'rhythm':
                         let time = 0;
                         q.params.pattern.forEach(dur => {
@@ -310,11 +259,6 @@
                             time += dur * 0.6; 
                         });
                         totalDuration = time;
-                        break;
-                    case 'cadence':
-                        q.params.chords[0].forEach(f => playTone(f, 1, now));
-                        q.params.chords[1].forEach(f => playTone(f, 1.5, now + 1.2));
-                        totalDuration = 2.8;
                         break;
                 }
                 setTimeout(() => setIsPlaying(false), totalDuration * 1000);
@@ -347,40 +291,59 @@
                         userId: user.uid
                     });
                     setSubmitted(true);
-                } catch (e) { console.error("Error submitting", e); alert("Error al guardar en base de datos. Verifica la conexión."); }
+                } catch (e) { alert("Error al guardar."); }
                 finally { setIsSubmitting(false); }
             };
 
+            if (currentStep === 'loading') return (
+                <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+                    <IconRefresh />
+                    <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest">Iniciando Sistema...</p>
+                </div>
+            );
+
+            if (currentStep === 'config_error') return (
+                <div className="min-h-screen flex items-center justify-center bg-slate-100 p-6">
+                    <div className="bg-white p-8 rounded-3xl shadow-xl max-w-md text-center border-t-8 border-rose-500 animate-in">
+                        <div className="text-rose-500 mb-4 flex justify-center"><IconAlertCircle /></div>
+                        <h2 className="text-xl font-bold mb-2">Falta Configuración</h2>
+                        <p className="text-slate-600 text-sm mb-6">Para usar este examen en <strong>GitHub</strong>, debes crear un proyecto en Firebase y copiar tus claves en la sección <code>githubConfig</code> del código.</p>
+                        <p className="text-[10px] text-slate-400 uppercase font-bold">Cátedra de Lenguaje Musical</p>
+                    </div>
+                </div>
+            );
+
             return (
                 <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-900 flex items-center justify-center">
-                    <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px] border border-slate-200">
+                    <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px] border border-slate-200 animate-in">
                         {/* Header */}
                         <div className="bg-indigo-600 p-6 text-white text-center relative">
-                            <button onClick={() => setCurrentStep('teacher')} className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400">
+                            <button onClick={() => setCurrentStep('teacher')} className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors">
                                 <IconUsers />
                             </button>
                             <h1 className="text-xl font-black uppercase tracking-tight">{quizData.title}</h1>
+                            <p className="text-[10px] text-indigo-200 font-bold tracking-[0.2em] uppercase mt-1">Sincronización Inteligente v2.5</p>
                         </div>
 
                         <div className="p-8 flex-1 flex flex-col">
                             {currentStep === 'start' && (
-                                <div className="text-center my-auto animate-in">
+                                <div className="text-center my-auto">
                                     <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600 border-4 border-white shadow-md">
                                         <IconVolume2 />
                                     </div>
                                     <h2 className="text-xl font-bold mb-2 text-slate-800 tracking-tight">Registro de Estudiante</h2>
-                                    <p className="text-slate-500 text-sm mb-6">Ingresa tu nombre completo para comenzar.</p>
+                                    <p className="text-slate-500 text-sm mb-6 leading-relaxed">Bienvenido. Tus resultados se enviarán automáticamente al registro de la cátedra.</p>
                                     <input type="text" placeholder="Nombre y Apellido" value={studentName} onChange={(e) => setStudentName(e.target.value)}
                                         className="w-full p-4 border-2 border-slate-200 rounded-2xl mb-4 focus:border-indigo-500 outline-none font-bold" />
                                     <button onClick={async () => { await initAudio(); setCurrentStep('quiz'); }} disabled={!studentName.trim()}
                                         className="w-full bg-indigo-600 disabled:bg-slate-300 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg">
-                                        Comenzar
+                                        Comenzar Examen
                                     </button>
                                 </div>
                             )}
 
                             {currentStep === 'quiz' && (
-                                <div className="space-y-6 flex-1 animate-in">
+                                <div className="space-y-6 flex-1">
                                     <div className="flex items-center gap-4">
                                         <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
                                             <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: `${((currentQuestion + 1) / quizData.questions.length) * 100}%` }}></div>
@@ -397,7 +360,7 @@
                                         <button onClick={handlePlayAudio} className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white hover:scale-105 shadow-lg'}`}>
                                             {isPlaying ? <IconRefresh /> : <div className="ml-1"><IconPlay /></div>}
                                         </button>
-                                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Reproducir Sonido</p>
+                                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Escuchar Sonido</p>
                                     </div>
 
                                     <div className="space-y-3">
@@ -425,50 +388,52 @@
                                             </button>
                                         )}
                                     </div>
-                                    {showHint && <div className="p-3 bg-amber-50 text-amber-800 text-[11px] rounded-lg italic">💡 {quizData.questions[currentQuestion].hint}</div>}
+                                    {showHint && <div className="p-3 bg-amber-50 text-amber-800 text-[11px] rounded-lg italic animate-in">💡 {quizData.questions[currentQuestion].hint}</div>}
                                 </div>
                             )}
 
                             {currentStep === 'result' && (
-                                <div className="text-center my-auto space-y-6 animate-in">
+                                <div className="text-center my-auto space-y-6">
                                     <div className="w-24 h-24 rounded-full border-8 border-indigo-600 flex items-center justify-center mx-auto bg-indigo-50 shadow-inner">
                                         <span className="text-3xl font-black">{score}/{quizData.questions.length}</span>
                                     </div>
-                                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">¡Completado!</h2>
+                                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">¡Examen Finalizado!</h2>
+                                    <p className="text-slate-500 text-sm mb-4">Buen trabajo, <strong>{studentName}</strong>. Presiona el botón para registrar tu calificación.</p>
                                     {!submitted ? (
-                                        <button onClick={submitResults} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                        <button onClick={submitResults} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-transform hover:scale-105">
                                             {isSubmitting ? <IconRefresh /> : <IconSend />} Enviar Nota
                                         </button>
                                     ) : (
-                                        <div className="p-5 bg-emerald-100 text-emerald-700 rounded-2xl font-black border-2 border-emerald-200">
-                                            <div className="mb-2"><IconCheckCircle /></div> ¡Registrado!
+                                        <div className="p-5 bg-emerald-100 text-emerald-700 rounded-2xl font-black border-2 border-emerald-200 flex flex-col items-center gap-2 animate-in">
+                                            <IconCheckCircle /> ¡Nota Registrada!
                                         </div>
                                     )}
-                                    <button onClick={() => window.location.reload()} className="text-slate-400 text-xs font-bold uppercase block mx-auto hover:text-indigo-600">Reiniciar</button>
+                                    <button onClick={() => window.location.reload()} className="text-slate-400 text-xs font-bold uppercase block mx-auto hover:text-indigo-600 transition-colors">Reiniciar</button>
                                 </div>
                             )}
 
                             {currentStep === 'teacher' && (
-                                <div className="flex-1 flex flex-col h-full animate-in">
+                                <div className="flex-1 flex flex-col h-full">
                                     <div className="flex justify-between items-center mb-6">
                                         <h2 className="text-xl font-bold flex items-center gap-2">
-                                            <IconClipboardList /> Registro de Notas
+                                            <IconClipboardList /> Lista de Resultados
                                         </h2>
-                                        <button onClick={() => setCurrentStep('start')} className="text-xs font-bold text-indigo-600 uppercase">Cerrar</button>
+                                        <button onClick={() => setCurrentStep('start')} className="text-xs font-bold text-indigo-600 uppercase border border-indigo-100 px-3 py-1 rounded-lg">Cerrar</button>
                                     </div>
                                     <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
-                                        {submissions.length === 0 ? <p className="text-center py-20 text-slate-400 italic">No hay resultados todavía.</p> : 
+                                        {submissions.length === 0 ? <p className="text-center py-20 text-slate-400 italic">No hay notas registradas todavía.</p> : 
                                             submissions.map(res => (
-                                                <div key={res.id} className="bg-slate-50 p-4 rounded-2xl border flex justify-between items-center">
+                                                <div key={res.id} className="bg-slate-50 p-4 rounded-2xl border flex justify-between items-center hover:bg-white transition-colors">
                                                     <div className="overflow-hidden">
                                                         <p className="font-bold text-slate-800 truncate">{res.name}</p>
-                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{res.timestamp?.toDate().toLocaleString() || 'Reciente'}</p>
+                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{res.timestamp?.toDate().toLocaleString() || 'Sincronizando...'}</p>
                                                     </div>
                                                     <div className="bg-indigo-600 text-white px-3 py-1 rounded-xl font-black text-lg">{res.score}/{res.total}</div>
                                                 </div>
                                             ))
                                         }
                                     </div>
+                                    <p className="text-[9px] text-slate-400 mt-4 text-center font-bold tracking-widest uppercase">Panel Docente - Profesor Johan Parilli</p>
                                 </div>
                             )}
                         </div>
