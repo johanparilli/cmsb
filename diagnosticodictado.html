@@ -3,32 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examen Diagnóstico: Dictado Musical</title>
-    <!-- Carga de librerías necesarias -->
+    <title>Examen Diagnóstico: Dictado musical</title>
+    
+    <!-- Librerías de React y Estilos -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest"></script>
     
-    <!-- Firebase SDK (v11.6.1) -->
+    <!-- Firebase SDK v11 -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        window.FirebaseSDK = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, addDoc, onSnapshot, serverTimestamp };
+        // Exponemos Firebase al objeto window para que React pueda acceder de forma segura
+        window.FB = { 
+            initializeApp, getAuth, signInAnonymously, onAuthStateChanged, 
+            signInWithCustomToken, getFirestore, collection, addDoc, onSnapshot, 
+            serverTimestamp, doc 
+        };
     </script>
+
+    <style>
+        .animate-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
 </head>
-<body>
+<body class="bg-slate-50">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useRef, useEffect } = React;
-        const { Play, RotateCcw, CheckCircle2, AlertCircle, Music, ChevronRight, Volume2, Info, Users, Send, ClipboardList, RefreshCw } = window.LucideReact;
 
-        // --- CONFIGURACIÓN DE DATOS ---
+        // --- ICONOS SVG INTEGRADOS ---
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconRotateCcw = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>;
+        const IconCheckCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
+        const IconAlertCircle = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>;
+        const IconChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
+        const IconVolume2 = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>;
+        const IconUsers = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
+        const IconSend = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
+        const IconClipboardList = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect><path d="M12 11h4"></path><path d="M12 16h4"></path><path d="M8 11h.01"></path><path d="M8 16h.01"></path></svg>;
+        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>;
+
+        // --- CONFIGURACIÓN DE FIREBASE ---
+        // Se intenta cargar la configuración del entorno Canvas; si no existe (GitHub), se usa la manual.
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : {
+                apiKey: "", // RELLENAR PARA GITHUB
+                authDomain: "TU_PROYECTO.firebaseapp.com",
+                projectId: "TU_PROYECTO",
+                storageBucket: "TU_PROYECTO.appspot.com",
+                messagingSenderId: "TU_SENDER_ID",
+                appId: "TU_APP_ID"
+            };
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'music-dictation-github';
+
         const quizData = {
             title: "Examen Diagnóstico: Dictado musical",
             questions: [
@@ -36,9 +71,8 @@
                     questionNumber: 1,
                     category: "BLOQUE RÍTMICO",
                     question: "¿En qué métrica se encuentra el ejercicio?",
-                    audioDesc: "Metrónomo marcando pulsos de tres en tres con acento en el primero.",
                     type: "metronome",
-                    params: { bpm: 100, beats: 3 },
+                    params: { beats: 3 },
                     answerOptions: [
                         { text: "Binaria (2/4)", isCorrect: false, rationale: "La métrica binaria se siente como un paso (1-2); aquí escuchas 1-2-3." },
                         { text: "Ternaria (3/4)", isCorrect: true, rationale: "El ciclo de un pulso fuerte y dos débiles define el 3/4." },
@@ -50,7 +84,6 @@
                     questionNumber: 2,
                     category: "DICTADO RÍTMICO",
                     question: "¿Cuál es el diseño rítmico del segundo compás?",
-                    audioDesc: "Compás 1: Negras. Compás 2: Dos corcheas y cuatro semicorcheas.",
                     type: "rhythm",
                     params: { pattern: [1, 1, 0.5, 0.5, 0.25, 0.25, 0.25, 0.25] },
                     answerOptions: [
@@ -64,41 +97,38 @@
                     questionNumber: 3,
                     category: "BLOQUE MELÓDICO",
                     question: "Identifica el intervalo entre estas dos notas ascendentes.",
-                    audioDesc: "Do4 y Mi bemol 4.",
                     type: "interval",
                     params: { notes: [261.63, 311.13] }, 
                     answerOptions: [
-                        { text: "Tercera Mayor", isCorrect: false, rationale: "La tercera mayor suena más 'alegre'. Esta es una Tercera Menor." },
-                        { text: "Tercera Menor", isCorrect: true, rationale: "Es el intervalo característico del color melancólico." },
-                        { text: "Cuarta Justa", isCorrect: false, rationale: "La cuarta es una distancia más amplia y estable." }
+                        { text: "Tercera Mayor", isCorrect: false },
+                        { text: "Tercera Menor", isCorrect: true },
+                        { text: "Cuarta Justa", isCorrect: false }
                     ],
-                    hint: "Canta 'Do - Re - Mib'. ¿Es un tono y medio o dos tonos?"
+                    hint: "Es el intervalo característico del color melancólico."
                 },
                 {
                     questionNumber: 4,
                     category: "INTERVALOS",
                     question: "¿Qué intervalo se escucha en este audio?",
-                    audioDesc: "Do4 y Sol4.",
                     type: "interval",
                     params: { notes: [261.63, 392.00] },
                     answerOptions: [
-                        { text: "Cuarta Justa", isCorrect: false, rationale: "La cuarta es más estrecha. Esto es una Quinta Justa." },
-                        { text: "Quinta Justa", isCorrect: true, rationale: "Es un intervalo muy estable." },
-                        { text: "Sexta Mayor", isCorrect: false, rationale: "La sexta suena más abierta y expresiva." }
+                        { text: "Cuarta Justa", isCorrect: false },
+                        { text: "Quinta Justa", isCorrect: true },
+                        { text: "Sexta Mayor", isCorrect: false }
                     ],
-                    hint: "Es el intervalo de 'Star Wars'."
+                    hint: "Es el intervalo inicial de 'Star Wars'."
                 },
                 {
                     questionNumber: 5,
                     category: "ESCALAS",
                     question: "¿A qué tipo de escala pertenece este fragmento?",
-                    audioDesc: "Escala Mayor de Do (Registro medio).",
                     type: "scale",
                     params: { notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] },
                     answerOptions: [
-                        { text: "Escala Menor Natural", isCorrect: false, rationale: "La menor tiene el tercer grado bajo. Esta suena brillante." },
-                        { text: "Escala Mayor", isCorrect: true, rationale: "Sigue el patrón exacto de T-T-S-T-T-T-S." },
-                        { text: "Escala Pentatónica", isCorrect: false, rationale: "Escuchaste 7 notas, la pentatónica solo tiene 5." }
+                        { text: "Escala Menor Natural", isCorrect: false },
+                        { text: "Escala Mayor", isCorrect: true },
+                        { text: "Escala Pentatónica", isCorrect: false }
                     ],
                     hint: "Es la escala clásica de Do Mayor."
                 },
@@ -106,41 +136,38 @@
                     questionNumber: 6,
                     category: "BLOQUE ARMÓNICO",
                     question: "Escucha el acorde. ¿Cuál es su cualidad?",
-                    audioDesc: "Acorde de Do Mayor (C4, E4, G4).",
                     type: "chord",
                     params: { notes: [261.63, 329.63, 392.00] },
                     answerOptions: [
-                        { text: "Tríada Mayor", isCorrect: true, rationale: "Suena estable y brillante." },
-                        { text: "Tríada Menor", isCorrect: false, rationale: "El acorde menor suena más oscuro." },
-                        { text: "Tríada Disminuida", isCorrect: false, rationale: "El disminuido suena muy tenso e inestable." }
+                        { text: "Tríada Mayor", isCorrect: true },
+                        { text: "Tríada Menor", isCorrect: false },
+                        { text: "Tríada Disminuida", isCorrect: false }
                     ],
-                    hint: "Piensa en un acorde de 'final feliz'."
+                    hint: "Suena estable y brillante."
                 },
                 {
                     questionNumber: 7,
                     category: "ACORDES",
                     question: "Identifica la cualidad de este acorde.",
-                    audioDesc: "Acorde de Do disminuido (C4, Eb4, Gb4).",
                     type: "chord",
                     params: { notes: [261.63, 311.13, 369.99] },
                     answerOptions: [
-                        { text: "Tríada Mayor", isCorrect: false, rationale: "Este acorde tiene mucha tensión." },
-                        { text: "Tríada Disminuida", isCorrect: true, rationale: "Se percibe la inestabilidad del tritono." },
-                        { text: "Tríada Aumentada", isCorrect: false, rationale: "El aumentado suena 'abierto', este suena 'cerrado'." }
+                        { text: "Tríada Mayor", isCorrect: false },
+                        { text: "Tríada Disminuida", isCorrect: true },
+                        { text: "Tríada Aumentada", isCorrect: false }
                     ],
                     hint: "Suena como música de suspenso."
                 },
                 {
                     questionNumber: 8,
                     category: "DISCRIMINACIÓN DE NOTAS",
-                    question: "¿Cuál es la dirección de esta melodía de 3 notas?",
-                    audioDesc: "Sol4, Mi4, Do4.",
+                    question: "¿Cuál es la dirección de esta melodía?",
                     type: "melody",
                     params: { notes: [392.00, 329.63, 261.63] },
                     answerOptions: [
-                        { text: "Ascendente", isCorrect: false, rationale: "Las notas van hacia el grave." },
-                        { text: "Descendente", isCorrect: true, rationale: "La frecuencia baja en cada nota." },
-                        { text: "Quebrada", isCorrect: false, rationale: "No cambia de dirección, siempre baja." }
+                        { text: "Ascendente", isCorrect: false },
+                        { text: "Descendente", isCorrect: true },
+                        { text: "Quebrada", isCorrect: false }
                     ],
                     hint: "¿La última nota es más grave que la primera?"
                 },
@@ -148,36 +175,34 @@
                     questionNumber: 9,
                     category: "CADENCIAS",
                     question: "Escucha estos dos acordes. ¿Qué sensación producen?",
-                    audioDesc: "Sol Mayor (V) a Do Mayor (I) - Transpuesto a octava superior.",
                     type: "cadence",
                     params: { chords: [[392.00, 493.88, 587.33], [523.25, 659.25, 783.99]] },
                     answerOptions: [
-                        { text: "Suspenso", isCorrect: false, rationale: "El segundo acorde da reposo total." },
-                        { text: "Reposo Total", isCorrect: true, rationale: "Es una Cadencia Auténtica." },
-                        { text: "Engaño", isCorrect: false, rationale: "No resolvió a un acorde inesperado." }
+                        { text: "Suspenso", isCorrect: false },
+                        { text: "Reposo Total", isCorrect: true },
+                        { text: "Engaño", isCorrect: false }
                     ],
-                    hint: "¿La música parece que 'terminó' satisfactoriamente?"
+                    hint: "¿Parece que la música 'llegó a casa'?"
                 },
                 {
                     questionNumber: 10,
                     category: "DICTADO FINAL",
                     question: "¿Qué nota es la que se repite en este fragmento?",
-                    audioDesc: "Do4, Re4, Do4, Mi4, Do4.",
                     type: "melody",
                     params: { notes: [261.63, 293.66, 261.63, 329.63, 261.63] },
                     answerOptions: [
-                        { text: "La más aguda", isCorrect: false, rationale: "La nota que vuelve siempre es la más grave de todas (Do4)." },
-                        { text: "La nota pedal (Tónica)", isCorrect: true, rationale: "El Do4 funciona como eje central de la melodía." },
-                        { text: "Ninguna se repite", isCorrect: false, rationale: "La primera nota suena tres veces." }
+                        { text: "La más aguda", isCorrect: false },
+                        { text: "La nota pedal (Tónica)", isCorrect: true },
+                        { text: "Ninguna se repite", isCorrect: false }
                     ],
                     hint: "Fíjate en la nota con la que empieza."
                 }
             ]
         };
 
-        // --- COMPONENTE PRINCIPAL ---
         function App() {
             const [user, setUser] = useState(null);
+            const [db, setDb] = useState(null);
             const [currentStep, setCurrentStep] = useState('start'); 
             const [studentName, setStudentName] = useState('');
             const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -188,26 +213,20 @@
             const [submissions, setSubmissions] = useState([]);
             const [isSubmitting, setIsSubmitting] = useState(false);
             const [submitted, setSubmitted] = useState(false);
-            const [dbReady, setDbReady] = useState(false);
             
             const audioCtx = useRef(null);
 
-            // Inicializar Firebase cuando los scripts estén listos
+            // Inicializar Firebase con protección de claves
             useEffect(() => {
-                const checkFirebase = setInterval(() => {
-                    if (window.FirebaseSDK) {
-                        clearInterval(checkFirebase);
-                        const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.FirebaseSDK;
-                        
+                const interval = setInterval(() => {
+                    if (window.FB) {
+                        clearInterval(interval);
+                        const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore } = window.FB;
                         try {
-                            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { apiKey: "", authDomain: "", projectId: "", storageBucket: "", messagingSenderId: "", appId: "" };
                             const app = initializeApp(firebaseConfig);
                             const auth = getAuth(app);
-                            const db = getFirestore(app);
-                            const appId = typeof __app_id !== 'undefined' ? __app_id : 'music-dictation-v2';
-
-                            window.dbInstance = db;
-                            window.appIdentifier = appId;
+                            const firestore = getFirestore(app);
+                            setDb(firestore);
 
                             const initAuth = async () => {
                                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
@@ -218,41 +237,39 @@
                             };
                             initAuth();
                             onAuthStateChanged(auth, setUser);
-                            setDbReady(true);
-                        } catch (e) { console.error("Firebase Error:", e); }
+                        } catch (e) { console.error("Firebase Initialization Error:", e); }
                     }
                 }, 100);
             }, []);
 
-            // Escuchar resultados (Modo Profesor)
+            // Escuchar resultados (Panel Profesor) siguiendo la Regla 1 y 2
             useEffect(() => {
-                if (!user || !dbReady || currentStep !== 'teacher') return;
-                const { collection, onSnapshot } = window.FirebaseSDK;
-                const q = collection(window.dbInstance, 'artifacts', window.appIdentifier, 'public', 'data', 'results');
+                if (!db || !user || currentStep !== 'teacher') return;
+                const { collection, onSnapshot } = window.FB;
+                const q = collection(db, 'artifacts', appId, 'public', 'data', 'results');
+                
                 const unsubscribe = onSnapshot(q, (snapshot) => {
                     const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    // Ordenamos en memoria para evitar errores de índices complejos en Firestore
                     setSubmissions(docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-                });
+                }, (error) => console.error("Snapshot Error:", error));
                 return () => unsubscribe();
-            }, [user, dbReady, currentStep]);
+            }, [db, user, currentStep]);
 
             const initAudio = async () => {
                 if (!audioCtx.current) {
                     audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
                 }
-                if (audioCtx.current.state === 'suspended') {
-                    await audioCtx.current.resume();
-                }
+                if (audioCtx.current.state === 'suspended') await audioCtx.current.resume();
             };
 
             const playTone = (freq, duration, startTime, type = 'triangle') => {
                 const osc = audioCtx.current.createOscillator();
                 const gain = audioCtx.current.createGain();
-                const attackTime = 0.01;
                 osc.type = type;
                 osc.frequency.setValueAtTime(freq, startTime);
                 gain.gain.setValueAtTime(0, startTime);
-                gain.gain.linearRampToValueAtTime(0.12, startTime + attackTime);
+                gain.gain.linearRampToValueAtTime(0.12, startTime + 0.01);
                 gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
                 osc.connect(gain);
                 gain.connect(audioCtx.current.destination);
@@ -272,33 +289,31 @@
                     case 'metronome':
                         for (let i = 0; i < q.params.beats * 2; i++) {
                             const freq = i % q.params.beats === 0 ? 880 : 440;
-                            playTone(freq, 0.1, now + (i * 0.6), 'triangle');
+                            playTone(freq, 0.1, now + (i * 0.6));
                         }
                         totalDuration = q.params.beats * 2 * 0.6;
                         break;
                     case 'interval':
                     case 'melody':
                     case 'scale':
-                        q.params.notes.forEach((freq, i) => {
-                            playTone(freq, 0.5, now + (i * 0.6), 'triangle');
-                        });
+                        q.params.notes.forEach((freq, i) => playTone(freq, 0.5, now + (i * 0.6)));
                         totalDuration = q.params.notes.length * 0.6;
                         break;
                     case 'chord':
-                        q.params.notes.forEach((freq) => playTone(freq, 1.6, now, 'triangle'));
+                        q.params.notes.forEach(freq => playTone(freq, 1.6, now));
                         totalDuration = 1.6;
                         break;
                     case 'rhythm':
-                        let timeOffset = 0;
-                        q.params.pattern.forEach((dur) => {
-                            playTone(440, 0.1, now + timeOffset, 'square');
-                            timeOffset += dur * 0.6; 
+                        let time = 0;
+                        q.params.pattern.forEach(dur => {
+                            playTone(440, 0.1, now + time, 'square');
+                            time += dur * 0.6; 
                         });
-                        totalDuration = timeOffset;
+                        totalDuration = time;
                         break;
                     case 'cadence':
-                        q.params.chords[0].forEach(f => playTone(f, 1, now, 'triangle'));
-                        q.params.chords[1].forEach(f => playTone(f, 1.5, now + 1.2, 'triangle'));
+                        q.params.chords[0].forEach(f => playTone(f, 1, now));
+                        q.params.chords[1].forEach(f => playTone(f, 1.5, now + 1.2));
                         totalDuration = 2.8;
                         break;
                 }
@@ -308,9 +323,7 @@
             const handleAnswerSelect = (index) => {
                 if (selectedAnswer !== null) return;
                 setSelectedAnswer(index);
-                if (quizData.questions[currentQuestion].answerOptions[index].isCorrect) {
-                    setScore(prev => prev + 1);
-                }
+                if (quizData.questions[currentQuestion].answerOptions[index].isCorrect) setScore(s => s + 1);
             };
 
             const nextQuestion = () => {
@@ -318,17 +331,15 @@
                     setCurrentQuestion(q => q + 1);
                     setSelectedAnswer(null);
                     setShowHint(false);
-                } else {
-                    setCurrentStep('result');
-                }
+                } else { setCurrentStep('result'); }
             };
 
-            const submitFinalResults = async () => {
-                if (!user || !dbReady || isSubmitting || submitted) return;
-                const { collection, addDoc, serverTimestamp } = window.FirebaseSDK;
+            const submitResults = async () => {
+                if (!db || !user || isSubmitting || submitted) return;
+                const { collection, addDoc, serverTimestamp } = window.FB;
                 setIsSubmitting(true);
                 try {
-                    await addDoc(collection(window.dbInstance, 'artifacts', window.appIdentifier, 'public', 'data', 'results'), {
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'results'), {
                         name: studentName,
                         score: score,
                         total: quizData.questions.length,
@@ -336,153 +347,132 @@
                         userId: user.uid
                     });
                     setSubmitted(true);
-                } catch (e) { console.error("Submit Error:", e); }
+                } catch (e) { console.error("Error submitting", e); alert("Error al guardar en base de datos. Verifica la conexión."); }
                 finally { setIsSubmitting(false); }
             };
 
             return (
                 <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-900 flex items-center justify-center">
                     <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px] border border-slate-200">
+                        {/* Header */}
                         <div className="bg-indigo-600 p-6 text-white text-center relative">
-                            <button 
-                                onClick={() => setCurrentStep('teacher')} 
-                                className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors"
-                            >
-                                <Users className="w-4 h-4" />
+                            <button onClick={() => setCurrentStep('teacher')} className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400">
+                                <IconUsers />
                             </button>
                             <h1 className="text-xl font-black uppercase tracking-tight">{quizData.title}</h1>
-                            <p className="text-[10px] text-indigo-200 font-bold tracking-[0.2em] uppercase mt-1">Audio Optimizado v2.3</p>
                         </div>
+
                         <div className="p-8 flex-1 flex flex-col">
                             {currentStep === 'start' && (
-                                <div className="text-center my-auto">
+                                <div className="text-center my-auto animate-in">
                                     <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-6 text-indigo-600 border-4 border-white shadow-md">
-                                        <Volume2 className="w-10 h-10" />
+                                        <IconVolume2 />
                                     </div>
-                                    <h2 className="text-xl font-bold mb-2">Ingresa tus datos</h2>
-                                    <p className="text-slate-500 text-sm mb-6">Tus resultados se enviarán al profesor al finalizar.</p>
-                                    <input 
-                                        type="text" 
-                                        placeholder="Nombre Completo"
-                                        value={studentName}
-                                        onChange={(e) => setStudentName(e.target.value)}
-                                        className="w-full p-4 border-2 border-slate-200 rounded-2xl mb-4 focus:border-indigo-500 outline-none transition-all font-bold"
-                                    />
-                                    <button 
-                                        onClick={async () => { await initAudio(); setCurrentStep('quiz'); }}
-                                        disabled={!studentName.trim()}
-                                        className="w-full bg-indigo-600 disabled:bg-slate-300 hover:bg-indigo-700 text-white py-4 rounded-2xl font-black transition-all uppercase tracking-widest shadow-lg"
-                                    >
-                                        Comenzar Examen
+                                    <h2 className="text-xl font-bold mb-2 text-slate-800 tracking-tight">Registro de Estudiante</h2>
+                                    <p className="text-slate-500 text-sm mb-6">Ingresa tu nombre completo para comenzar.</p>
+                                    <input type="text" placeholder="Nombre y Apellido" value={studentName} onChange={(e) => setStudentName(e.target.value)}
+                                        className="w-full p-4 border-2 border-slate-200 rounded-2xl mb-4 focus:border-indigo-500 outline-none font-bold" />
+                                    <button onClick={async () => { await initAudio(); setCurrentStep('quiz'); }} disabled={!studentName.trim()}
+                                        className="w-full bg-indigo-600 disabled:bg-slate-300 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg">
+                                        Comenzar
                                     </button>
                                 </div>
                             )}
+
                             {currentStep === 'quiz' && (
-                                <div className="space-y-6 flex-1">
+                                <div className="space-y-6 flex-1 animate-in">
                                     <div className="flex items-center gap-4">
-                                        <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                                        <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
                                             <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: `${((currentQuestion + 1) / quizData.questions.length) * 100}%` }}></div>
                                         </div>
                                         <span className="text-[10px] font-black text-slate-400">{currentQuestion + 1}/{quizData.questions.length}</span>
                                     </div>
+
                                     <div className="space-y-1">
                                         <span className="text-indigo-600 text-[10px] font-black uppercase tracking-widest">{quizData.questions[currentQuestion].category}</span>
                                         <h2 className="text-lg font-bold text-slate-800 leading-tight">{quizData.questions[currentQuestion].question}</h2>
                                     </div>
-                                    <div className="bg-slate-900 rounded-2xl p-8 flex flex-col items-center gap-4 relative overflow-hidden group">
-                                        <button 
-                                            onClick={handlePlayAudio}
-                                            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all z-10 ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white hover:scale-110 shadow-xl shadow-indigo-500/40'}`}
-                                        >
-                                            {isPlaying ? (
-                                                <div className="flex gap-1 items-end h-5">
-                                                    <div className="w-1.5 bg-indigo-400 animate-bounce h-full"></div>
-                                                    <div className="w-1.5 bg-indigo-400 animate-bounce h-2/3 delay-75"></div>
-                                                    <div className="w-1.5 bg-indigo-400 animate-bounce h-full delay-150"></div>
-                                                </div>
-                                            ) : <Play fill="white" className="w-7 h-7 ml-1" />}
+
+                                    <div className="bg-slate-900 rounded-2xl p-8 flex flex-col items-center gap-3">
+                                        <button onClick={handlePlayAudio} className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white hover:scale-105 shadow-lg'}`}>
+                                            {isPlaying ? <IconRefresh /> : <div className="ml-1"><IconPlay /></div>}
                                         </button>
-                                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest z-10">Reproducir Sonido</p>
+                                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Reproducir Sonido</p>
                                     </div>
+
                                     <div className="space-y-3">
                                         {quizData.questions[currentQuestion].answerOptions.map((opt, i) => (
-                                            <button
-                                                key={i}
-                                                onClick={() => handleAnswerSelect(i)}
-                                                disabled={selectedAnswer !== null}
-                                                className={`w-full p-4 rounded-xl border-2 text-left transition-all text-sm font-bold ${
+                                            <button key={i} onClick={() => handleAnswerSelect(i)} disabled={selectedAnswer !== null}
+                                                className={`w-full p-4 rounded-xl border-2 text-left text-sm font-bold transition-all ${
                                                     selectedAnswer === null ? 'border-slate-100 bg-slate-50 hover:border-indigo-300' :
                                                     opt.isCorrect ? 'border-emerald-500 bg-emerald-50 text-emerald-800' :
                                                     selectedAnswer === i ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-50 opacity-40'
-                                                }`}
-                                            >
+                                                }`}>
                                                 <div className="flex justify-between items-center">
                                                     <span>{opt.text}</span>
-                                                    {selectedAnswer !== null && opt.isCorrect && <CheckCircle2 className="w-4 h-4" />}
-                                                    {selectedAnswer === i && !opt.isCorrect && <AlertCircle className="w-4 h-4" />}
+                                                    {selectedAnswer !== null && opt.isCorrect && <div className="text-emerald-600"><IconCheckCircle /></div>}
+                                                    {selectedAnswer === i && !opt.isCorrect && <div className="text-rose-600"><IconAlertCircle /></div>}
                                                 </div>
                                             </button>
                                         ))}
                                     </div>
-                                    <div className="pt-4 flex justify-between items-center border-t border-slate-100">
-                                        <button onClick={() => setShowHint(!showHint)} className="text-slate-400 text-[10px] font-bold uppercase hover:text-indigo-600 transition-colors">Ayuda</button>
+
+                                    <div className="pt-4 flex justify-between items-center border-t">
+                                        <button onClick={() => setShowHint(!showHint)} className="text-slate-400 text-[10px] font-bold uppercase hover:text-indigo-600">Pista</button>
                                         {selectedAnswer !== null && (
-                                            <button onClick={nextQuestion} className="bg-slate-900 text-white px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 text-xs uppercase tracking-widest">
-                                                {currentQuestion === quizData.questions.length - 1 ? 'Terminar' : 'Siguiente'}
-                                                <ChevronRight className="w-4 h-4" />
+                                            <button onClick={nextQuestion} className="bg-slate-900 text-white px-8 py-2.5 rounded-xl font-bold text-xs uppercase flex items-center gap-2">
+                                                Siguiente <IconChevronRight />
                                             </button>
                                         )}
                                     </div>
-                                    {showHint && <div className="p-3 bg-amber-50 text-amber-800 text-[11px] rounded-lg border border-amber-100 italic">💡 {quizData.questions[currentQuestion].hint}</div>}
+                                    {showHint && <div className="p-3 bg-amber-50 text-amber-800 text-[11px] rounded-lg italic">💡 {quizData.questions[currentQuestion].hint}</div>}
                                 </div>
                             )}
+
                             {currentStep === 'result' && (
-                                <div className="text-center my-auto space-y-6 animate-in zoom-in-95 duration-300">
+                                <div className="text-center my-auto space-y-6 animate-in">
                                     <div className="w-24 h-24 rounded-full border-8 border-indigo-600 flex items-center justify-center mx-auto bg-indigo-50 shadow-inner">
                                         <span className="text-3xl font-black">{score}/{quizData.questions.length}</span>
                                     </div>
-                                    <h2 className="text-2xl font-black">¡Examen Completado!</h2>
-                                    <p className="text-slate-500 text-sm mb-4">Buen trabajo, <strong>{studentName}</strong>.</p>
+                                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">¡Completado!</h2>
                                     {!submitted ? (
-                                        <button onClick={submitFinalResults} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg flex items-center justify-center gap-2">
-                                            {isSubmitting ? <RefreshCw className="animate-spin" /> : <Send />} Enviar al Profesor
+                                        <button onClick={submitResults} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                                            {isSubmitting ? <IconRefresh /> : <IconSend />} Enviar Nota
                                         </button>
                                     ) : (
-                                        <div className="p-4 bg-emerald-50 text-emerald-700 rounded-2xl font-bold flex items-center justify-center gap-2">
-                                            <CheckCircle2 /> Registrado con éxito
+                                        <div className="p-5 bg-emerald-100 text-emerald-700 rounded-2xl font-black border-2 border-emerald-200">
+                                            <div className="mb-2"><IconCheckCircle /></div> ¡Registrado!
                                         </div>
                                     )}
-                                    <button onClick={() => window.location.reload()} className="text-slate-400 text-xs font-bold uppercase mt-4">Reiniciar</button>
+                                    <button onClick={() => window.location.reload()} className="text-slate-400 text-xs font-bold uppercase block mx-auto hover:text-indigo-600">Reiniciar</button>
                                 </div>
                             )}
+
                             {currentStep === 'teacher' && (
-                                <div className="flex-1 flex flex-col h-full animate-in slide-in-from-right duration-300">
+                                <div className="flex-1 flex flex-col h-full animate-in">
                                     <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold flex items-center gap-2"><ClipboardList className="w-6 h-6 text-indigo-600" /> Registro</h2>
-                                        <button onClick={() => setCurrentStep('start')} className="text-xs font-bold text-indigo-600 uppercase border border-indigo-200 px-3 py-1 rounded-lg">Cerrar</button>
+                                        <h2 className="text-xl font-bold flex items-center gap-2">
+                                            <IconClipboardList /> Registro de Notas
+                                        </h2>
+                                        <button onClick={() => setCurrentStep('start')} className="text-xs font-bold text-indigo-600 uppercase">Cerrar</button>
                                     </div>
-                                    <div className="flex-1 overflow-y-auto pr-2 space-y-2">
-                                        {submissions.length === 0 ? (
-                                            <div className="text-center py-24 text-slate-400 italic text-sm">Sin registros todavía.</div>
-                                        ) : (
-                                            submissions.map((res) => (
+                                    <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
+                                        {submissions.length === 0 ? <p className="text-center py-20 text-slate-400 italic">No hay resultados todavía.</p> : 
+                                            submissions.map(res => (
                                                 <div key={res.id} className="bg-slate-50 p-4 rounded-2xl border flex justify-between items-center">
-                                                    <div>
-                                                        <p className="font-bold text-slate-800">{res.name}</p>
-                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">
-                                                            {res.timestamp?.toDate().toLocaleString() || 'Reciente'}
-                                                        </p>
+                                                    <div className="overflow-hidden">
+                                                        <p className="font-bold text-slate-800 truncate">{res.name}</p>
+                                                        <p className="text-[9px] text-slate-400 font-bold uppercase">{res.timestamp?.toDate().toLocaleString() || 'Reciente'}</p>
                                                     </div>
-                                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-xl font-black text-lg">
-                                                        {res.score}/{res.total}
-                                                    </div>
+                                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-xl font-black text-lg">{res.score}/{res.total}</div>
                                                 </div>
                                             ))
-                                        )}
+                                        }
                                     </div>
                                 </div>
                             )}
                         </div>
+                        {/* Footer */}
                         <div className="bg-slate-50 p-4 text-center border-t text-[9px] text-slate-400 font-black tracking-widest uppercase">
                             Cátedra de Lenguaje Musical Profesor Johan Parilli
                         </div>
