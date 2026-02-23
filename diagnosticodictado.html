@@ -1,375 +1,490 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examen Diagnóstico: Dictado musical</title>
+import React, { useState, useRef, useEffect } from 'react';
+import { Play, RotateCcw, CheckCircle2, AlertCircle, Music, ChevronRight, Volume2, Info, Users, Send, ClipboardList, RefreshCw, Lock } from 'lucide-react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'firebase/auth';
+import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp, query } from 'firebase/firestore';
+
+// --- CONFIGURACIÓN DE DATOS DEL EXAMEN ---
+// Cada pregunta vale 2 puntos para un total de 20.
+// Se han eliminado las pistas por tratarse de un examen diagnóstico.
+const quizData = {
+  title: "Examen Diagnóstico: Dictado musical",
+  totalPoints: 20,
+  questions: [
+    {
+      questionNumber: 1,
+      category: "INTERVALOS",
+      question: "Identifica este intervalo simple ASCENDENTE.",
+      type: "interval",
+      points: 2,
+      params: { notes: [261.63, 392.00] }, // Do - Sol (5ta Justa)
+      answerOptions: [
+        { text: "Cuarta Justa", isCorrect: false },
+        { text: "Quinta Justa", isCorrect: true },
+        { text: "Sexta Mayor", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 2,
+      category: "INTERVALOS",
+      question: "Identifica este intervalo simple DESCENDENTE.",
+      type: "interval",
+      points: 2,
+      params: { notes: [392.00, 261.63] }, // Sol - Do (5ta Justa Desc)
+      answerOptions: [
+        { text: "Quinta Justa", isCorrect: true },
+        { text: "Cuarta Justa", isCorrect: false },
+        { text: "Octava Justa", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 3,
+      category: "INTERVALOS ARMÓNICOS",
+      question: "Identifica este intervalo ARMÓNICO (notas simultáneas).",
+      type: "chord",
+      points: 2,
+      params: { notes: [261.63, 329.63] }, // Do - Mi (3ra Mayor)
+      answerOptions: [
+        { text: "Tercera Menor", isCorrect: false },
+        { text: "Tercera Mayor", isCorrect: true },
+        { text: "Cuarta Justa", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 4,
+      category: "ESCALAS DIATÓNICAS",
+      question: "¿Hacia qué dirección se mueve esta escala diatónica?",
+      type: "scale",
+      points: 2,
+      params: { notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] },
+      answerOptions: [
+        { text: "Ascendente", isCorrect: true },
+        { text: "Descendente", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 5,
+      category: "ESCALAS DIATÓNICAS",
+      question: "Escucha el fragmento. ¿Qué dirección lleva la escala?",
+      type: "scale",
+      points: 2,
+      params: { notes: [523.25, 493.88, 440.00, 392.00, 349.23, 329.63, 293.66, 261.63] },
+      answerOptions: [
+        { text: "Ascendente", isCorrect: false },
+        { text: "Descendente", isCorrect: true }
+      ]
+    },
+    {
+      questionNumber: 6,
+      category: "CIFRAS INDICADORAS",
+      question: "Según la melodía escuchada, ¿cuál es la cifra indicadora?",
+      type: "melody_meter",
+      points: 2,
+      params: { beats: 2, notes: [261.63, 293.66, 329.63, 261.63] }, // 2/4
+      answerOptions: [
+        { text: "2/4", isCorrect: true },
+        { text: "3/4", isCorrect: false },
+        { text: "4/4", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 7,
+      category: "CIFRAS INDICADORAS",
+      question: "Identifica el compás de esta melodía.",
+      type: "melody_meter",
+      points: 2,
+      params: { beats: 3, notes: [392.00, 349.23, 329.63, 392.00, 349.23, 329.63] }, // 3/4
+      answerOptions: [
+        { text: "2/4", isCorrect: false },
+        { text: "3/4", isCorrect: true },
+        { text: "4/4", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 8,
+      category: "CIFRAS INDICADORAS",
+      question: "¿Cuál es el compás de este ejercicio melódico?",
+      type: "melody_meter",
+      points: 2,
+      params: { beats: 4, notes: [261.63, 329.63, 392.00, 523.25] }, // 4/4
+      answerOptions: [
+        { text: "2/4", isCorrect: false },
+        { text: "3/4", isCorrect: false },
+        { text: "4/4", isCorrect: true }
+      ]
+    },
+    {
+      questionNumber: 9,
+      category: "INTERVALOS",
+      question: "Identifica este intervalo simple ASCENDENTE.",
+      type: "interval",
+      points: 2,
+      params: { notes: [261.63, 349.23] }, // Do - Fa (4ta Justa)
+      answerOptions: [
+        { text: "Tercera Mayor", isCorrect: false },
+        { text: "Cuarta Justa", isCorrect: true },
+        { text: "Quinta Justa", isCorrect: false }
+      ]
+    },
+    {
+      questionNumber: 10,
+      category: "INTERVALOS ARMÓNICOS",
+      question: "Identifica este intervalo ARMÓNICO.",
+      type: "chord",
+      points: 2,
+      params: { notes: [261.63, 311.13] }, // Do - Mib (3ra Menor)
+      answerOptions: [
+        { text: "Tercera Menor", isCorrect: true },
+        { text: "Tercera Mayor", isCorrect: false },
+        { text: "Segunda Mayor", isCorrect: false }
+      ]
+    }
+  ]
+};
+
+// --- INICIALIZACIÓN FIREBASE ---
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'dictado-musical-johan';
+const CLAVE_PROFESOR = "7777";
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [currentStep, setCurrentStep] = useState('start'); 
+  const [studentName, setStudentName] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [pointsScored, setPointsScored] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [submissions, setSubmissions] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [passInput, setPassInput] = useState('');
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  
+  const audioCtx = useRef(null);
+
+  useEffect(() => {
+    const initAuth = async () => {
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+        await signInWithCustomToken(auth, __initial_auth_token);
+      } else {
+        await signInAnonymously(auth);
+      }
+    };
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, setUser);
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!user || !isAuthorized || currentStep !== 'teacher') return;
+    const resultsRef = collection(db, 'artifacts', appId, 'public', 'data', 'results');
+    const unsubscribe = onSnapshot(resultsRef, (snapshot) => {
+        const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        setSubmissions(docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
+      }
+    );
+    return () => unsubscribe();
+  }, [user, isAuthorized, currentStep]);
+
+  const initAudio = async () => {
+    if (!audioCtx.current) {
+      audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.current.state === 'suspended') {
+      await audioCtx.current.resume();
+    }
+  };
+
+  const playTone = (freq, duration, startTime, type = 'triangle', volume = 0.12) => {
+    const osc = audioCtx.current.createOscillator();
+    const gain = audioCtx.current.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, startTime);
+    gain.gain.setValueAtTime(0, startTime);
+    gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.current.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration);
+  };
+
+  const handlePlayAudio = async () => {
+    await initAudio();
+    if (isPlaying) return;
+    setIsPlaying(true);
     
-    <!-- Librerías de React y Tailwind -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Firebase SDK v11 -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    const q = quizData.questions[currentQuestion];
+    const now = audioCtx.current.currentTime;
+    let totalDuration = 0;
 
-        // Exponemos las funciones para que React pueda usarlas de forma segura
-        window.FB = { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken, getFirestore, collection, addDoc, onSnapshot, serverTimestamp };
-        console.log("Firebase SDK cargado correctamente");
-    </script>
-
-    <style>
-        .animate-in { animation: fadeIn 0.4s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        body { margin: 0; padding: 0; }
-    </style>
-</head>
-<body class="bg-slate-50">
-    <div id="root"></div>
-
-    <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
-
-        // --- CLAVE DE ACCESO PARA EL PROFESOR ---
-        const CLAVE_PROFESOR = "7777"; 
-
-        // --- ICONOS SVG INTEGRADOS ---
-        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
-        const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>;
-        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
-        const IconSend = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>;
-        const IconChevron = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>;
-        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>;
-        const IconLock = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
-
-        // --- TUS CREDENCIALES ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyChINleQF9xgYGcL5oAxWHOhImELRIWw0w",
-            authDomain: "examenes-prof-johan-parilli.firebaseapp.com",
-            projectId: "examenes-prof-johan-parilli",
-            storageBucket: "examenes-prof-johan-parilli.firebasestorage.app",
-            messagingSenderId: "598409070175",
-            appId: "1:598409070175:web:179864ebb8f627789b3dea"
-        };
-
-        const examId = "dictado-musical-final-v1";
-
-        const quizData = {
-            title: "Examen Diagnóstico: Dictado musical",
-            questions: [
-                {
-                    category: "RITMO",
-                    question: "¿En qué métrica se encuentra este ejercicio?",
-                    type: "metronome",
-                    params: { beats: 3 },
-                    answerOptions: [
-                        { text: "Binaria (2/4)", isCorrect: false },
-                        { text: "Ternaria (3/4)", isCorrect: true },
-                        { text: "Cuaternaria (4/4)", isCorrect: false }
-                    ]
-                },
-                {
-                    category: "DICTADO",
-                    question: "¿Cuál es el diseño rítmico escuchado?",
-                    type: "rhythm",
-                    params: { pattern: [1, 1, 0.5, 0.5, 0.5, 0.5] },
-                    answerOptions: [
-                        { text: "Cuatro Corcheas y dos Negras", isCorrect: false },
-                        { text: "Dos Negras y cuatro Corcheas", isCorrect: true }
-                    ]
-                },
-                {
-                    category: "INTERVALOS",
-                    question: "Identifica este intervalo ascendente.",
-                    type: "interval",
-                    params: { notes: [261.63, 311.13] }, 
-                    answerOptions: [
-                        { text: "Tercera Mayor", isCorrect: false },
-                        { text: "Tercera Menor", isCorrect: true }
-                    ]
-                },
-                {
-                    category: "INTERVALOS",
-                    question: "¿Qué intervalo es este? (Muy estable)",
-                    type: "interval",
-                    params: { notes: [261.63, 392.00] },
-                    answerOptions: [
-                        { text: "Quinta Justa", isCorrect: true },
-                        { text: "Cuarta Justa", isCorrect: false }
-                    ]
-                },
-                {
-                    category: "ESCALAS",
-                    question: "¿A qué tipo de escala pertenece?",
-                    type: "scale",
-                    params: { notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25] },
-                    answerOptions: [
-                        { text: "Escala Mayor", isCorrect: true },
-                        { text: "Escala Menor", isCorrect: false }
-                    ]
-                }
-            ]
-        };
-
-        function App() {
-            const [user, setUser] = useState(null);
-            const [db, setDb] = useState(null);
-            const [currentStep, setCurrentStep] = useState('loading'); 
-            const [studentName, setStudentName] = useState('');
-            const [currentQuestion, setCurrentQuestion] = useState(0);
-            const [selectedAnswer, setSelectedAnswer] = useState(null);
-            const [score, setScore] = useState(0);
-            const [isPlaying, setIsPlaying] = useState(false);
-            const [submissions, setSubmissions] = useState([]);
-            const [isSubmitting, setIsSubmitting] = useState(false);
-            const [submitted, setSubmitted] = useState(false);
-            
-            // Estados para seguridad del profesor
-            const [passInput, setPassInput] = useState('');
-            const [isAuthorized, setIsAuthorized] = useState(false);
-            
-            const audioCtx = useRef(null);
-
-            useEffect(() => {
-                const checkFB = setInterval(async () => {
-                    if (window.FB) {
-                        clearInterval(checkFB);
-                        const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore } = window.FB;
-                        try {
-                            const app = initializeApp(firebaseConfig);
-                            const auth = getAuth(app);
-                            const firestore = getFirestore(app);
-                            setDb(firestore);
-                            await signInAnonymously(auth);
-                            onAuthStateChanged(auth, setUser);
-                            setCurrentStep('start');
-                        } catch (e) {
-                            console.error("Error Firebase:", e);
-                            setCurrentStep('error');
-                        }
-                    }
-                }, 500);
-                return () => clearInterval(checkFB);
-            }, []);
-
-            useEffect(() => {
-                if (!db || !user || !isAuthorized || currentStep !== 'teacher') return;
-                const { collection, onSnapshot } = window.FB;
-                const resultsRef = collection(db, 'artifacts', examId, 'public', 'data', 'results');
-                const unsubscribe = onSnapshot(resultsRef, (snapshot) => {
-                    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setSubmissions(docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
-                });
-                return () => unsubscribe();
-            }, [db, user, isAuthorized, currentStep]);
-
-            const initAudio = async () => {
-                if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.current.state === 'suspended') await audioCtx.current.resume();
-            };
-
-            const playTone = (freq, duration, startTime, type = 'triangle') => {
-                const osc = audioCtx.current.createOscillator();
-                const gain = audioCtx.current.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, startTime);
-                gain.gain.setValueAtTime(0, startTime);
-                gain.gain.linearRampToValueAtTime(0.12, startTime + 0.01);
-                gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-                osc.connect(gain); gain.connect(audioCtx.current.destination);
-                osc.start(startTime); osc.stop(startTime + duration);
-            };
-
-            const handlePlayAudio = async () => {
-                await initAudio();
-                if (isPlaying) return;
-                setIsPlaying(true);
-                const q = quizData.questions[currentQuestion];
-                const now = audioCtx.current.currentTime;
-                let totalTime = 0;
-
-                if (q.type === 'metronome') {
-                    for (let i = 0; i < q.params.beats * 2; i++) {
-                        playTone(i % q.params.beats === 0 ? 880 : 440, 0.1, now + (i * 0.6));
-                    }
-                    totalTime = q.params.beats * 2 * 0.6;
-                } else if (q.type === 'rhythm') {
-                    q.params.pattern.forEach((dur, i) => playTone(440, 0.1, now + (i * 0.6), 'square'));
-                    totalTime = q.params.pattern.length * 0.6;
-                } else {
-                    q.params.notes.forEach((freq, i) => playTone(freq, 0.5, now + (i * 0.6)));
-                    totalTime = q.params.notes.length * 0.6;
-                }
-
-                setTimeout(() => setIsPlaying(false), totalTime * 1000);
-            };
-
-            const handleAnswerSelect = (index) => {
-                if (selectedAnswer !== null) return;
-                setSelectedAnswer(index);
-                if (quizData.questions[currentQuestion].answerOptions[index].isCorrect) setScore(s => s + 1);
-            };
-
-            const submitResults = async () => {
-                if (isSubmitting || submitted || !db || !user) return;
-                const { collection, addDoc, serverTimestamp } = window.FB;
-                setIsSubmitting(true);
-                try {
-                    await addDoc(collection(db, 'artifacts', examId, 'public', 'data', 'results'), {
-                        name: studentName,
-                        score: score,
-                        total: quizData.questions.length,
-                        timestamp: serverTimestamp(),
-                        userId: user.uid
-                    });
-                    setSubmitted(true);
-                } catch (e) { console.error(e); }
-                finally { setIsSubmitting(false); }
-            };
-
-            const handleTeacherAuth = () => {
-                if (passInput === CLAVE_PROFESOR) {
-                    setIsAuthorized(true);
-                } else {
-                    alert("Clave incorrecta");
-                    setPassInput('');
-                }
-            };
-
-            if (currentStep === 'loading') return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-                    <IconRefresh />
-                    <p className="font-bold text-slate-400 uppercase text-[10px] tracking-widest text-center px-6">Sincronizando con la Cátedra...</p>
-                </div>
+    switch (q.type) {
+      case 'interval':
+      case 'scale':
+        q.params.notes.forEach((freq, i) => playTone(freq, 0.6, now + (i * 0.7)));
+        totalDuration = q.params.notes.length * 0.7;
+        break;
+      case 'chord':
+        q.params.notes.forEach((freq) => playTone(freq, 2, now));
+        totalDuration = 2;
+        break;
+      case 'melody_meter':
+        const beatDuration = 0.6;
+        for(let bar = 0; bar < 2; bar++) {
+          for(let b = 0; b < q.params.beats; b++) {
+            const isAccent = b === 0;
+            const noteIndex = (bar * q.params.beats + b) % q.params.notes.length;
+            playTone(
+              q.params.notes[noteIndex], 
+              0.5, 
+              now + totalDuration, 
+              'triangle', 
+              isAccent ? 0.25 : 0.08
             );
-
-            return (
-                <div className="min-h-screen bg-slate-100 p-4 font-sans text-slate-900 flex items-center justify-center">
-                    <div className="w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col min-h-[600px] border border-slate-200 animate-in">
-                        <div className="bg-indigo-600 p-6 text-white text-center relative">
-                            <button onClick={() => setCurrentStep('teacher')} className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors">
-                                <IconUser />
-                            </button>
-                            <h1 className="text-xl font-black uppercase tracking-tight">{quizData.title}</h1>
-                        </div>
-
-                        <div className="p-8 flex-1 flex flex-col">
-                            {currentStep === 'start' && (
-                                <div className="text-center my-auto">
-                                    <h2 className="text-xl font-bold mb-4">Ingreso de Alumno</h2>
-                                    <p className="text-slate-500 text-sm mb-6">Tus resultados serán enviados al profesor Johan Parilli.</p>
-                                    <input type="text" placeholder="Tu nombre completo" value={studentName} onChange={(e) => setStudentName(e.target.value)}
-                                        className="w-full p-4 border-2 border-slate-200 rounded-2xl mb-4 focus:border-indigo-500 outline-none font-bold text-center" />
-                                    <button onClick={async () => { await initAudio(); setCurrentStep('quiz'); }} disabled={!studentName.trim()}
-                                        className="w-full bg-indigo-600 disabled:bg-slate-300 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg active:scale-95 transition-all">Comenzar Prueba</button>
-                                </div>
-                            )}
-
-                            {currentStep === 'quiz' && (
-                                <div className="space-y-6 flex-1 animate-in">
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                                            <div className="bg-indigo-600 h-full transition-all" style={{ width: `${((currentQuestion + 1) / quizData.questions.length) * 100}%` }}></div>
-                                        </div>
-                                        <span className="text-[10px] font-black text-slate-400">{currentQuestion + 1}/5</span>
-                                    </div>
-                                    <h2 className="text-lg font-bold text-slate-800 text-center leading-tight">{quizData.questions[currentQuestion].question}</h2>
-                                    <div className="bg-slate-900 rounded-2xl p-8 flex flex-col items-center gap-3">
-                                        <button onClick={handlePlayAudio} className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white shadow-lg active:scale-95'}`}>
-                                            {isPlaying ? <IconRefresh /> : <IconPlay />}
-                                        </button>
-                                        <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">Reproducir Sonido</p>
-                                    </div>
-                                    <div className="space-y-3">
-                                        {quizData.questions[currentQuestion].answerOptions.map((opt, i) => (
-                                            <button key={i} onClick={() => handleAnswerSelect(i)} disabled={selectedAnswer !== null}
-                                                className={`w-full p-4 rounded-xl border-2 text-left text-sm font-bold transition-all ${
-                                                    selectedAnswer === null ? 'border-slate-100 bg-slate-50 hover:border-indigo-300' :
-                                                    opt.isCorrect ? 'border-emerald-500 bg-emerald-50 text-emerald-800' :
-                                                    selectedAnswer === i ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-50 opacity-40'
-                                                }`}>
-                                                <div className="flex justify-between items-center"><span>{opt.text}</span>{selectedAnswer !== null && opt.isCorrect && <IconCheck />}</div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                    {selectedAnswer !== null && (
-                                        <button onClick={() => { if (currentQuestion < quizData.questions.length - 1) { setCurrentQuestion(q => q + 1); setSelectedAnswer(null); } else { setCurrentStep('result'); } }} 
-                                            className="w-full bg-slate-900 text-white py-3 rounded-xl font-bold uppercase flex items-center justify-center gap-2">Continuar <IconChevron /></button>
-                                    )}
-                                </div>
-                            )}
-
-                            {currentStep === 'result' && (
-                                <div className="text-center my-auto space-y-6 animate-in">
-                                    <div className="text-4xl font-black text-indigo-600">{score}/5</div>
-                                    <h2 className="text-2xl font-black">¡Examen Finalizado!</h2>
-                                    {!submitted ? (
-                                        <button onClick={submitResults} className="w-full bg-emerald-600 text-white py-4 rounded-2xl font-black uppercase tracking-widest flex items-center justify-center gap-2 transition-all shadow-lg active:scale-95">
-                                            {isSubmitting ? <IconRefresh /> : <><IconSend /> Enviar Nota</>}
-                                        </button>
-                                    ) : (
-                                        <div className="p-5 bg-emerald-100 text-emerald-700 rounded-2xl font-black border-2 border-emerald-200">¡Nota Registrada Correctamente!</div>
-                                    )}
-                                    <button onClick={() => window.location.reload()} className="text-slate-400 text-xs font-bold uppercase block mx-auto hover:text-indigo-600 transition-colors">Volver a intentar</button>
-                                </div>
-                            )}
-
-                            {currentStep === 'teacher' && (
-                                <div className="flex-1 flex flex-col h-full animate-in">
-                                    {!isAuthorized ? (
-                                        <div className="my-auto text-center space-y-6">
-                                            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
-                                                <IconLock />
-                                            </div>
-                                            <h2 className="font-bold">Acceso Restringido</h2>
-                                            <input 
-                                                type="password" 
-                                                placeholder="Clave de Profesor" 
-                                                value={passInput}
-                                                onChange={(e) => setPassInput(e.target.value)}
-                                                className="w-full p-4 border-2 border-slate-200 rounded-2xl focus:border-indigo-500 outline-none text-center font-bold"
-                                            />
-                                            <div className="flex gap-2">
-                                                <button onClick={() => setCurrentStep('start')} className="flex-1 bg-slate-200 py-3 rounded-xl font-bold text-xs uppercase">Cancelar</button>
-                                                <button onClick={handleTeacherAuth} className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase">Entrar</button>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <div className="flex justify-between items-center mb-6 font-bold border-b pb-4 text-indigo-600 uppercase tracking-widest text-xs">
-                                                <span>Registro de Calificaciones</span>
-                                                <button onClick={() => { setIsAuthorized(false); setCurrentStep('start'); }} className="bg-slate-100 px-3 py-1 rounded-lg">Cerrar</button>
-                                            </div>
-                                            <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-hide">
-                                                {submissions.length === 0 ? <p className="text-center py-20 text-slate-400 italic text-sm">Esperando registros...</p> : 
-                                                    submissions.map(res => (
-                                                        <div key={res.id} className="bg-slate-50 p-4 rounded-2xl border flex justify-between items-center hover:bg-white transition-all">
-                                                            <div><p className="font-bold text-slate-800 truncate pr-2">{res.name}</p>
-                                                            <p className="text-[9px] text-slate-400 font-bold uppercase">{res.timestamp?.toDate().toLocaleString() || 'Reciente'}</p></div>
-                                                            <div className="bg-indigo-600 text-white px-3 py-1 rounded-xl font-black text-lg">{res.score}/5</div>
-                                                        </div>
-                                                    ))
-                                                }
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <div className="bg-slate-50 p-4 text-center border-t text-[9px] text-slate-400 font-black tracking-widest uppercase italic">Cátedra de Lenguaje Musical Profesor Johan Parilli</div>
-                    </div>
-                </div>
-            );
+            totalDuration += beatDuration;
+          }
         }
+        break;
+    }
+    setTimeout(() => setIsPlaying(false), totalDuration * 1000);
+  };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
+  const handleAnswerSelect = (index) => {
+    if (selectedAnswer !== null) return;
+    setSelectedAnswer(index);
+    if (quizData.questions[currentQuestion].answerOptions[index].isCorrect) {
+      setPointsScored(prev => prev + quizData.questions[currentQuestion].points);
+    }
+  };
 
+  const nextQuestion = () => {
+    if (currentQuestion < quizData.questions.length - 1) {
+      setCurrentQuestion(q => q + 1);
+      setSelectedAnswer(null);
+    } else {
+      setCurrentStep('result');
+    }
+  };
+
+  const submitFinalResults = async () => {
+    if (!user || isSubmitting || submitted) return;
+    setIsSubmitting(true);
+    try {
+      const resultsRef = collection(db, 'artifacts', appId, 'public', 'data', 'results');
+      await addDoc(resultsRef, {
+        name: studentName,
+        score: pointsScored,
+        total: quizData.totalPoints,
+        timestamp: serverTimestamp(),
+        userId: user.uid
+      });
+      setSubmitted(true);
+    } catch (e) {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleTeacherAuth = () => {
+    if (passInput === CLAVE_PROFESOR) {
+        setIsAuthorized(true);
+    } else {
+        alert("Clave incorrecta");
+        setPassInput('');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-4 font-sans text-slate-900 flex items-center justify-center">
+      <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col min-h-[600px] border border-slate-200">
+        
+        {/* Banner Superior */}
+        <div className="bg-indigo-600 p-6 text-white text-center relative">
+          <button 
+            onClick={() => setCurrentStep('teacher')} 
+            className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors"
+          >
+            <Users className="w-4 h-4" />
+          </button>
+          <h1 className="text-xl font-black uppercase tracking-tight">{quizData.title}</h1>
+        </div>
+
+        <div className="p-8 flex-1 flex flex-col">
+          
+          {currentStep === 'start' && (
+            <div className="text-center my-auto space-y-6">
+              <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mx-auto text-indigo-600 border-4 border-white shadow-md">
+                <Music className="w-10 h-10" />
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-xl font-bold">Registro de Estudiante</h2>
+                <input 
+                  type="text" 
+                  placeholder="Tu nombre completo"
+                  value={studentName}
+                  onChange={(e) => setStudentName(e.target.value)}
+                  className="w-full p-4 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 outline-none transition-all font-bold text-center"
+                />
+              </div>
+              <button 
+                onClick={() => setCurrentStep('quiz')}
+                disabled={!studentName.trim()}
+                className="w-full bg-indigo-600 disabled:bg-slate-200 text-white py-4 rounded-2xl font-black transition-all uppercase tracking-widest shadow-lg hover:bg-indigo-700"
+              >
+                Comenzar Examen (Puntaje: {quizData.totalPoints})
+              </button>
+            </div>
+          )}
+
+          {currentStep === 'quiz' && (
+            <div className="space-y-6 flex-1">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div className="bg-indigo-600 h-full transition-all duration-500" style={{ width: `${((currentQuestion + 1) / quizData.questions.length) * 100}%` }}></div>
+                </div>
+                <span className="text-[10px] font-black text-slate-400">{currentQuestion + 1}/{quizData.questions.length}</span>
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-indigo-600 text-[10px] font-black uppercase tracking-widest">{quizData.questions[currentQuestion].category}</span>
+                  <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">{quizData.questions[currentQuestion].points} Pts</span>
+                </div>
+                <h2 className="text-lg font-bold text-slate-800 leading-tight">{quizData.questions[currentQuestion].question}</h2>
+              </div>
+
+              <div className="bg-slate-900 rounded-2xl p-8 flex flex-col items-center gap-4 border-4 border-slate-800 shadow-inner">
+                <button 
+                  onClick={handlePlayAudio}
+                  className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-600 text-white hover:scale-105 shadow-xl shadow-indigo-500/30'}`}
+                >
+                  {isPlaying ? <RefreshCw className="animate-spin" /> : <Play fill="white" className="w-7 h-7 ml-1" />}
+                </button>
+                <p className="text-[10px] text-indigo-300 font-bold uppercase tracking-widest">
+                  {isPlaying ? "Reproduciendo..." : "Reproducir Sonido"}
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                {quizData.questions[currentQuestion].answerOptions.map((opt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleAnswerSelect(i)}
+                    disabled={selectedAnswer !== null}
+                    className={`w-full p-4 rounded-xl border-2 text-left transition-all text-sm font-bold ${
+                      selectedAnswer === null ? 'border-slate-100 bg-slate-50 hover:border-indigo-200' :
+                      opt.isCorrect ? 'border-emerald-500 bg-emerald-50 text-emerald-800' :
+                      selectedAnswer === i ? 'border-rose-500 bg-rose-50 text-rose-800' : 'border-slate-50 opacity-40'
+                    }`}
+                  >
+                    <div className="flex justify-between items-center">
+                      <span>{opt.text}</span>
+                      {selectedAnswer !== null && opt.isCorrect && <CheckCircle2 className="w-4 h-4" />}
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {selectedAnswer !== null && (
+                <div className="flex justify-end pt-4">
+                  <button onClick={nextQuestion} className="bg-slate-900 text-white py-3 px-8 rounded-xl font-bold flex items-center justify-center gap-2 text-xs uppercase tracking-widest hover:bg-indigo-600 transition-all">
+                    {currentQuestion === quizData.questions.length - 1 ? 'Calificar' : 'Siguiente'}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {currentStep === 'result' && (
+            <div className="text-center my-auto space-y-6 animate-in">
+              <div className="w-24 h-24 rounded-full border-8 border-indigo-600 flex items-center justify-center mx-auto bg-indigo-50 shadow-inner">
+                <div className="flex flex-col items-center">
+                  <span className="text-3xl font-black text-indigo-600">{pointsScored}</span>
+                  <span className="text-[10px] font-bold text-slate-400">DE 20</span>
+                </div>
+              </div>
+              <h2 className="text-2xl font-black">Examen Finalizado</h2>
+              
+              {!submitted ? (
+                <button 
+                  onClick={submitFinalResults}
+                  disabled={isSubmitting}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 transition-all shadow-lg uppercase tracking-widest"
+                >
+                  {isSubmitting ? <RefreshCw className="animate-spin" /> : <><Send className="w-5 h-5" /> Enviar Calificación</>}
+                </button>
+              ) : (
+                <div className="bg-emerald-100 text-emerald-700 p-5 rounded-2xl font-black flex flex-col items-center justify-center gap-2 border-2 border-emerald-200">
+                  <CheckCircle2 className="w-8 h-8" /> ¡Calificación Registrada!
+                </div>
+              )}
+              
+              <button onClick={() => window.location.reload()} className="text-slate-400 text-[10px] font-bold uppercase hover:text-indigo-600">Reiniciar</button>
+            </div>
+          )}
+
+          {currentStep === 'teacher' && (
+            <div className="flex-1 flex flex-col h-full animate-in">
+                {!isAuthorized ? (
+                    <div className="my-auto text-center space-y-6">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 border-2 border-slate-200">
+                            <Lock className="w-8 h-8" />
+                        </div>
+                        <h2 className="font-bold">Acceso de Administrador</h2>
+                        <input 
+                            type="password" 
+                            placeholder="Clave maestra" 
+                            value={passInput}
+                            onChange={(e) => setPassInput(e.target.value)}
+                            className="w-full p-4 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 outline-none text-center font-bold"
+                        />
+                        <div className="flex gap-2">
+                            <button onClick={() => setCurrentStep('start')} className="flex-1 bg-slate-100 py-3 rounded-xl font-bold text-xs uppercase text-slate-500">Volver</button>
+                            <button onClick={handleTeacherAuth} className="flex-1 bg-indigo-600 text-white py-3 rounded-xl font-bold text-xs uppercase tracking-widest">Entrar</button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold flex items-center gap-2 text-indigo-600"><ClipboardList className="w-5 h-5" /> Registro</h2>
+                            <button onClick={() => { setIsAuthorized(false); setCurrentStep('start'); }} className="text-[10px] font-bold text-slate-400 uppercase border px-3 py-1 rounded-lg">Cerrar</button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto pr-2 space-y-2 scrollbar-hide">
+                            {submissions.length === 0 ? (
+                                <div className="text-center py-20 text-slate-400 italic text-sm">Aún no hay registros.</div>
+                            ) : (
+                                submissions.map((res) => (
+                                    <div key={res.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex justify-between items-center hover:bg-white transition-all">
+                                        <div>
+                                            <p className="font-bold text-slate-800 text-sm truncate max-w-[200px]">{res.name}</p>
+                                            <p className="text-[9px] text-slate-400 font-bold uppercase">
+                                            {res.timestamp?.toDate().toLocaleString() || 'Sincronizando...'}
+                                            </p>
+                                        </div>
+                                        <div className="bg-indigo-600 text-white w-12 h-10 flex flex-col items-center justify-center rounded-xl font-black leading-none">
+                                            <span className="text-lg">{res.score}</span>
+                                            <span className="text-[7px]">/ 20</span>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </>
+                )}
+            </div>
+          )}
+
+        </div>
+
+        <div className="bg-slate-50 p-4 text-center border-t text-[9px] text-slate-400 font-black tracking-widest uppercase italic">
+          Cátedra de Lenguaje Musical Profesor Johan Parilli
+        </div>
+      </div>
+    </div>
+  );
+}
