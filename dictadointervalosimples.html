@@ -56,11 +56,11 @@
         const CLAVE_PROFESOR = "7777";
         const examId = "metodo-intervalos-v4";
 
-        // --- ESTRUCTURA DEL MÉTODO CON DESBLOQUEO SEMANAL ---
+        // --- ESTRUCTURA DEL MÉTODO CON DESBLOQUEO SEMANAL (20 ejercicios exactos por semana) ---
         const curriculum = [
             {
                 id: "semana-1",
-                title: "Semana 1: Todos los Intervalos (Iniciación)",
+                title: "Semana 1: Todos los Intervalos",
                 color: "emerald",
                 unlockTime: new Date(2026, 1, 23).getTime(), // 23 de Febrero 2026
                 unlockLabel: "23 Feb",
@@ -75,7 +75,8 @@
                             { id: "e3", type: "interval", params: { notes: [261.63, 329.63] }, question: "Identifica este salto de tercera:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
                             { id: "e4", type: "interval", params: { notes: [261.63, 311.13] }, question: "¿Qué distancia hay aquí?", options: [{ text: "Tercera Mayor", correct: false }, { text: "Tercera Menor", correct: true }] },
                             { id: "e5", type: "interval", params: { notes: [349.23, 440.00] }, question: "Identifica esta cualidad:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
-                            { id: "e6", type: "interval", params: { notes: [329.63, 349.23] }, question: "¿Y este último de la lección?", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] }
+                            { id: "e6", type: "interval", params: { notes: [329.63, 349.23] }, question: "¿Y este?", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] },
+                            { id: "e6b", type: "interval", params: { notes: [440.00, 523.25] }, question: "Identifica este salto:", options: [{ text: "Tercera Menor", correct: true }, { text: "Tercera Mayor", correct: false }] }
                         ]
                     },
                     {
@@ -87,7 +88,8 @@
                             { id: "e8", type: "interval", params: { notes: [261.63, 392.00] }, question: "Escucha este nuevo salto:", options: [{ text: "Cuarta Justa", correct: false }, { text: "Quinta Justa", correct: true }] },
                             { id: "e9", type: "interval", params: { notes: [293.66, 440.00] }, question: "¿Cuarta o Quinta?", options: [{ text: "Quinta Justa", correct: true }, { text: "Octava Justa", correct: false }] },
                             { id: "e10", type: "interval", params: { notes: [329.63, 440.00] }, question: "Cuidado con esta distancia:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
-                            { id: "e11", type: "interval", params: { notes: [261.63, 523.25] }, question: "Identifica este salto máximo:", options: [{ text: "Quinta Justa", correct: false }, { text: "Octava Justa", correct: true }] }
+                            { id: "e11", type: "interval", params: { notes: [261.63, 523.25] }, question: "Identifica este salto máximo:", options: [{ text: "Quinta Justa", correct: false }, { text: "Octava Justa", correct: true }] },
+                            { id: "e11b", type: "interval", params: { notes: [392.00, 523.25] }, question: "¿Qué intervalo Justo es este?", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
                         ]
                     },
                     {
@@ -100,14 +102,15 @@
                             { id: "e14", type: "interval", params: { notes: [261.63, 493.88] }, question: "Escucha esta tensión:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Séptima Mayor", correct: true }] },
                             { id: "e15", type: "interval", params: { notes: [261.63, 466.16] }, question: "Identifica esta séptima:", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
                             { id: "e16", type: "interval", params: { notes: [293.66, 493.88] }, question: "Analiza esta distancia:", options: [{ text: "Sexta Mayor", correct: true }, { text: "Séptima Mayor", correct: false }] },
-                            { id: "e17", type: "interval", params: { notes: [329.63, 587.33] }, question: "Último de la primera semana:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Menor", correct: false }] }
+                            { id: "e17", type: "interval", params: { notes: [329.63, 587.33] }, question: "Casi terminamos la semana:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Menor", correct: false }] },
+                            { id: "e17b", type: "interval", params: { notes: [329.63, 523.25] }, question: "¿Qué distancia hay aquí?", options: [{ text: "Sexta Menor", correct: true }, { text: "Sexta Mayor", correct: false }] }
                         ]
                     }
                 ]
             },
             {
                 id: "semana-2",
-                title: "Semana 2: Todos los Intervalos (Consolidación)",
+                title: "Semana 2: Consolidación",
                 color: "amber",
                 unlockTime: new Date(2026, 2, 2).getTime(), // 2 de Marzo 2026
                 unlockLabel: "2 Mar",
@@ -122,7 +125,8 @@
                             { id: "e20", type: "interval", params: { notes: [440.00, 523.25] }, question: "Analiza la cualidad de este salto:", options: [{ text: "Tercera Mayor", correct: false }, { text: "Tercera Menor", correct: true }] },
                             { id: "e21", type: "interval", params: { notes: [293.66, 369.99] }, question: "¿Qué tercera es esta?", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
                             { id: "e22", type: "interval", params: { notes: [466.16, 587.33] }, question: "Escucha en este registro agudo:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
-                            { id: "e23", type: "interval", params: { notes: [493.88, 523.25] }, question: "Finalizamos con:", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] }
+                            { id: "e23", type: "interval", params: { notes: [493.88, 523.25] }, question: "Analiza esto:", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] },
+                            { id: "e23b", type: "interval", params: { notes: [329.63, 392.00] }, question: "Analiza este último paso:", options: [{ text: "Tercera Menor", correct: true }, { text: "Segunda Mayor", correct: false }] }
                         ]
                     },
                     {
@@ -132,9 +136,10 @@
                         exercises: [
                             { id: "e24", type: "interval", params: { notes: [349.23, 466.16] }, question: "Identifica este intervalo:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
                             { id: "e25", type: "interval", params: { notes: [329.63, 493.88] }, question: "¿Cuál es este sonido?", options: [{ text: "Cuarta Justa", correct: false }, { text: "Quinta Justa", correct: true }] },
-                            { id: "e26", type: "interval", params: { notes: [220.00, 440.00] }, question: "Identifica este salto amplio:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e26", type: "interval", params: { notes: [220.00, 440.00] }, question: "Identifica este salto:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
                             { id: "e27", type: "interval", params: { notes: [440.00, 587.33] }, question: "Analiza la distancia:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
-                            { id: "e28", type: "interval", params: { notes: [392.00, 587.33] }, question: "¿Qué salto Justo es?", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] }
+                            { id: "e28", type: "interval", params: { notes: [392.00, 587.33] }, question: "¿Qué salto Justo es?", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] },
+                            { id: "e28b", type: "interval", params: { notes: [293.66, 587.33] }, question: "Escucha este salto amplio:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
                         ]
                     },
                     {
@@ -147,14 +152,15 @@
                             { id: "e31", type: "interval", params: { notes: [349.23, 659.25] }, question: "Identifica esta séptima:", options: [{ text: "Séptima Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
                             { id: "e32", type: "interval", params: { notes: [293.66, 523.25] }, question: "¿Qué intervalo genera esta tensión?", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
                             { id: "e33", type: "interval", params: { notes: [392.00, 698.46] }, question: "Analiza este gran salto:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Mayor", correct: false }] },
-                            { id: "e34", type: "interval", params: { notes: [329.63, 523.25] }, question: "Último de la semana dos:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] }
+                            { id: "e34", type: "interval", params: { notes: [329.63, 523.25] }, question: "Casi termina la semana:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
+                            { id: "e34b", type: "interval", params: { notes: [440.00, 783.99] }, question: "Identifica la tensión final:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Menor", correct: false }] }
                         ]
                     }
                 ]
             },
             {
                 id: "semana-3",
-                title: "Semana 3: Todos los Intervalos (Dominio)",
+                title: "Semana 3: Dominio Total",
                 color: "rose",
                 unlockTime: new Date(2026, 2, 9).getTime(), // 9 de Marzo 2026
                 unlockLabel: "9 Mar",
@@ -169,7 +175,8 @@
                             { id: "e37", type: "interval", params: { notes: [329.63, 261.63] }, question: "Identifica esta caída:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
                             { id: "e38", type: "interval", params: { notes: [587.33, 493.88] }, question: "Analiza la cualidad:", options: [{ text: "Tercera Menor", correct: true }, { text: "Tercera Mayor", correct: false }] },
                             { id: "e39", type: "interval", params: { notes: [392.00, 293.66] }, question: "Intervalo Justo en descenso:", options: [{ text: "Quinta Justa", correct: false }, { text: "Cuarta Justa", correct: true }] },
-                            { id: "e40", type: "interval", params: { notes: [523.25, 349.23] }, question: "Un salto descendente:", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] }
+                            { id: "e40", type: "interval", params: { notes: [523.25, 349.23] }, question: "Un salto descendente:", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] },
+                            { id: "e40b", type: "interval", params: { notes: [440.00, 329.63] }, question: "Descenso estable:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
                         ]
                     },
                     {
@@ -181,13 +188,14 @@
                             { id: "e42", type: "interval", params: { notes: [523.25, 329.63] }, question: "Escucha con atención:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
                             { id: "e43", type: "interval", params: { notes: [466.16, 261.63] }, question: "Identifica esta distancia:", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
                             { id: "e44", type: "interval", params: { notes: [493.88, 261.63] }, question: "¿Qué intervalo genera esto?", options: [{ text: "Séptima Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
-                            { id: "e45", type: "interval", params: { notes: [783.99, 392.00] }, question: "Identifica la caída:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
+                            { id: "e45", type: "interval", params: { notes: [783.99, 392.00] }, question: "Identifica la caída:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e45b", type: "interval", params: { notes: [698.46, 440.00] }, question: "Identifica el salto final:", options: [{ text: "Sexta Menor", correct: true }, { text: "Sexta Mayor", correct: false }] }
                         ]
                     },
                     {
                         id: "s3-l3",
                         title: "Lección 9: Gran Reto Final",
-                        theory: "En este último bloque pondremos a prueba tu oído con todos los intervalos simples (de 2da a 8va) mezclados en direcciones ascendentes y descendentes.",
+                        theory: "En este último bloque pondremos a prueba tu oído con todos los intervalos simples mezclados en direcciones ascendentes y descendentes.",
                         exercises: [
                             { id: "e46", type: "interval", params: { notes: [293.66, 440.00] }, question: "Reto 1 (Ascendente):", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] },
                             { id: "e47", type: "interval", params: { notes: [698.46, 440.00] }, question: "Reto 2 (Descendente):", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
@@ -195,8 +203,7 @@
                             { id: "e49", type: "interval", params: { notes: [523.25, 392.00] }, question: "Reto 4 (Descendente):", options: [{ text: "Quinta Justa", correct: false }, { text: "Cuarta Justa", correct: true }] },
                             { id: "e50", type: "interval", params: { notes: [493.88, 523.25] }, question: "Reto 5 (Ascendente):", options: [{ text: "Segunda Menor", correct: true }, { text: "Tercera Menor", correct: false }] },
                             { id: "e51", type: "interval", params: { notes: [440.00, 349.23] }, question: "Reto 6 (Descendente):", options: [{ text: "Tercera Mayor", correct: true }, { text: "Cuarta Justa", correct: false }] },
-                            { id: "e52", type: "interval", params: { notes: [261.63, 493.88] }, question: "Reto 7 (Ascendente):", options: [{ text: "Séptima Mayor", correct: true }, { text: "Sexta Mayor", correct: false }] },
-                            { id: "e53", type: "interval", params: { notes: [440.00, 220.00] }, question: "Reto 8 (Descendente):", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
+                            { id: "e52", type: "interval", params: { notes: [261.63, 493.88] }, question: "Reto 7 (Ascendente):", options: [{ text: "Séptima Mayor", correct: true }, { text: "Sexta Mayor", correct: false }] }
                         ]
                     }
                 ]
@@ -348,15 +355,23 @@
                 if (isSubmitting || !user) return;
                 setIsSubmitting(true);
                 
-                // Calcular puntaje basado SOLO en las lecciones desbloqueadas hasta hoy
-                const now = Date.now();
-                const isPreviewMode = studentName.trim().toUpperCase() === 'PROFESOR' || studentName.trim() === '7777';
-                const unlockedLevels = curriculum.filter(lvl => isPreviewMode || now >= lvl.unlockTime);
-                const currentWeekLevel = unlockedLevels[unlockedLevels.length - 1]; // La semana más reciente
+                // Buscar la semana a la que pertenece la lección que el alumno está viendo en este momento
+                let activeLevel = null;
+                curriculum.forEach(level => {
+                    if (level.lessons.some(l => l.id === activeLessonId)) {
+                        activeLevel = level;
+                    }
+                });
+                if (!activeLevel) activeLevel = curriculum[0];
                 
-                const totalUnlockedExercises = unlockedLevels.flatMap(lvl => lvl.lessons).flatMap(l => l.exercises).length;
-                const correctAnswers = Object.values(userProgress).filter(v => v === true).length;
-                const attempted = Object.keys(userProgress).length;
+                // Extraer SOLO los ejercicios de la semana actual (deberían ser siempre 20)
+                const levelExercises = activeLevel.lessons.flatMap(l => l.exercises);
+                const totalLevelExercises = levelExercises.length; 
+                const levelExerciseIds = levelExercises.map(e => e.id);
+                
+                // Contar cuántos de ESTA SEMANA hizo correctos o intentó
+                const correctAnswers = levelExerciseIds.filter(id => userProgress[id] === true).length;
+                const attempted = levelExerciseIds.filter(id => userProgress[id] !== undefined).length;
                 
                 try {
                     const { collection, addDoc, serverTimestamp } = window.FB;
@@ -366,14 +381,14 @@
                         name: studentName,
                         correct: correctAnswers,
                         attempted: attempted,
-                        total: totalUnlockedExercises,
-                        scoreText: `${correctAnswers}/${totalUnlockedExercises}`,
-                        currentWeek: currentWeekLevel ? currentWeekLevel.title : "Semana 1",
+                        total: totalLevelExercises,
+                        scoreText: `${correctAnswers}/${totalLevelExercises}`,
+                        currentWeek: activeLevel.title,
                         timestamp: serverTimestamp(),
                         userId: user.uid
                     });
                     
-                    alert(`¡Progreso de la ${currentWeekLevel ? currentWeekLevel.title : 'semana'} guardado con éxito!`);
+                    alert(`¡Progreso de "${activeLevel.title}" guardado con éxito! Nota de esta semana: ${correctAnswers}/${totalLevelExercises}`);
                 } catch (e) { 
                     alert("Error al guardar. Asegúrate de tener conexión."); 
                     console.error(e); 
@@ -581,7 +596,7 @@
                                 </div>
                                 
                                 {/* Navegación inferior rápida con botón dinámico */}
-                                <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+                                <div className="mt-12 pt-8 border-t flex flex-col sm:flex-row justify-between items-center gap-4 pb-20 md:pb-0">
                                     <button onClick={() => window.scrollTo(0,0)} className="text-sm font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Volver arriba ↑</button>
                                     
                                     {isCurrentLessonDone && nextLesson && (
@@ -593,8 +608,8 @@
                                         </button>
                                     )}
                                     {isCurrentLessonDone && !nextLesson && (
-                                        <div className="px-6 py-3 bg-emerald-100 text-emerald-700 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center gap-2 animate-in">
-                                            <IconCheck /> ¡Has completado todo lo disponible!
+                                        <div className="px-6 py-3 bg-emerald-100 text-emerald-700 rounded-xl font-bold text-sm uppercase tracking-widest flex items-center gap-2 animate-in text-center">
+                                            <IconCheck /> ¡Has completado todo lo disponible! No olvides guardar tu progreso.
                                         </div>
                                     )}
                                 </div>
