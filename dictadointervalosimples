@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Método de Dictado Online</title>
+    
+    <!-- Librerías base -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Firebase SDK v11 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        window.FB = { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore, collection, addDoc, onSnapshot, serverTimestamp };
+    </script>
+
+    <style>
+        .animate-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        body { margin: 0; padding: 0; overflow-x: hidden; background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect } = React;
+
+        // --- ICONOS ---
+        const IconPlay = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>;
+        const IconUser = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>;
+        const IconCheck = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+        const IconBook = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>;
+        const IconLock = ({size=24, className=""}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
+        const IconMenu = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>;
+        const IconRefresh = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path></svg>;
+
+        // --- CONFIGURACIÓN FIREBASE ---
+        const userFirebaseConfig = {
+            apiKey: "AIzaSyChINleQF9xgYGcL5oAxWHOhImELRIWw0w",
+            authDomain: "examenes-prof-johan-parilli.firebaseapp.com",
+            projectId: "examenes-prof-johan-parilli",
+            storageBucket: "examenes-prof-johan-parilli.firebasestorage.app",
+            messagingSenderId: "598409070175",
+            appId: "1:598409070175:web:179864ebb8f627789b3dea"
+        };
+        const activeFirebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userFirebaseConfig;
+        const CLAVE_PROFESOR = "7777";
+        const examId = "metodo-intervalos-v4";
+
+        // --- ESTRUCTURA DEL MÉTODO CON DESBLOQUEO SEMANAL ---
+        const curriculum = [
+            {
+                id: "semana-1",
+                title: "Semana 1: Todos los Intervalos (Iniciación)",
+                color: "emerald",
+                unlockTime: new Date(2026, 1, 23).getTime(), // 23 de Febrero 2026
+                unlockLabel: "23 Feb",
+                lessons: [
+                    {
+                        id: "s1-l1",
+                        title: "Lección 1: Segundas y Terceras",
+                        theory: "Comenzamos nuestro entrenamiento con los intervalos más pequeños. Las Segundas son pasos conjuntos, mientras que las Terceras son el primer salto real que define el color (Mayor o Menor) de la música.",
+                        exercises: [
+                            { id: "e1", type: "interval", params: { notes: [261.63, 293.66] }, question: "Escucha este intervalo. ¿Qué segunda es?", options: [{ text: "Segunda Mayor", correct: true }, { text: "Segunda Menor", correct: false }] },
+                            { id: "e2", type: "interval", params: { notes: [261.63, 277.18] }, question: "Escucha atentamente este intervalo:", options: [{ text: "Segunda Mayor", correct: false }, { text: "Segunda Menor", correct: true }] },
+                            { id: "e3", type: "interval", params: { notes: [261.63, 329.63] }, question: "Identifica este salto de tercera:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e4", type: "interval", params: { notes: [261.63, 311.13] }, question: "¿Qué distancia hay aquí?", options: [{ text: "Tercera Mayor", correct: false }, { text: "Tercera Menor", correct: true }] },
+                            { id: "e5", type: "interval", params: { notes: [349.23, 440.00] }, question: "Identifica esta cualidad:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e6", type: "interval", params: { notes: [329.63, 349.23] }, question: "¿Y este último de la lección?", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] }
+                        ]
+                    },
+                    {
+                        id: "s1-l2",
+                        title: "Lección 2: Cuartas, Quintas y Octavas",
+                        theory: "A estos se les llama intervalos 'Justos'. Suenan muy limpios, estables y abiertos. Trata de memorizar esa sensación de resonancia perfecta.",
+                        exercises: [
+                            { id: "e7", type: "interval", params: { notes: [261.63, 349.23] }, question: "Identifica este intervalo:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e8", type: "interval", params: { notes: [261.63, 392.00] }, question: "Escucha este nuevo salto:", options: [{ text: "Cuarta Justa", correct: false }, { text: "Quinta Justa", correct: true }] },
+                            { id: "e9", type: "interval", params: { notes: [293.66, 440.00] }, question: "¿Cuarta o Quinta?", options: [{ text: "Quinta Justa", correct: true }, { text: "Octava Justa", correct: false }] },
+                            { id: "e10", type: "interval", params: { notes: [329.63, 440.00] }, question: "Cuidado con esta distancia:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e11", type: "interval", params: { notes: [261.63, 523.25] }, question: "Identifica este salto máximo:", options: [{ text: "Quinta Justa", correct: false }, { text: "Octava Justa", correct: true }] }
+                        ]
+                    },
+                    {
+                        id: "s1-l3",
+                        title: "Lección 3: Sextas y Séptimas",
+                        theory: "Llegamos a los saltos largos. Las sextas suelen sentirse amplias e integradas, mientras que las séptimas generan mucha tensión y ganas de resolver hacia la octava.",
+                        exercises: [
+                            { id: "e12", type: "interval", params: { notes: [261.63, 440.00] }, question: "Identifica este salto amplio:", options: [{ text: "Sexta Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
+                            { id: "e13", type: "interval", params: { notes: [261.63, 415.30] }, question: "¿Mayor o Menor?", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
+                            { id: "e14", type: "interval", params: { notes: [261.63, 493.88] }, question: "Escucha esta tensión:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Séptima Mayor", correct: true }] },
+                            { id: "e15", type: "interval", params: { notes: [261.63, 466.16] }, question: "Identifica esta séptima:", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
+                            { id: "e16", type: "interval", params: { notes: [293.66, 493.88] }, question: "Analiza esta distancia:", options: [{ text: "Sexta Mayor", correct: true }, { text: "Séptima Mayor", correct: false }] },
+                            { id: "e17", type: "interval", params: { notes: [329.63, 587.33] }, question: "Último de la primera semana:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Menor", correct: false }] }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "semana-2",
+                title: "Semana 2: Todos los Intervalos (Consolidación)",
+                color: "amber",
+                unlockTime: new Date(2026, 2, 2).getTime(), // 2 de Marzo 2026
+                unlockLabel: "2 Mar",
+                lessons: [
+                    {
+                        id: "s2-l1",
+                        title: "Lección 4: Práctica de Segundas y Terceras",
+                        theory: "En esta segunda semana afianzaremos lo aprendido cambiando los registros y las notas de partida. Tu oído debe reconocer la distancia sin importar cuán agudo o grave suene.",
+                        exercises: [
+                            { id: "e18", type: "interval", params: { notes: [392.00, 440.00] }, question: "Escucha este paso:", options: [{ text: "Segunda Mayor", correct: true }, { text: "Segunda Menor", correct: false }] },
+                            { id: "e19", type: "interval", params: { notes: [293.66, 311.13] }, question: "Identifica esta estrechez:", options: [{ text: "Segunda Mayor", correct: false }, { text: "Segunda Menor", correct: true }] },
+                            { id: "e20", type: "interval", params: { notes: [440.00, 523.25] }, question: "Analiza la cualidad de este salto:", options: [{ text: "Tercera Mayor", correct: false }, { text: "Tercera Menor", correct: true }] },
+                            { id: "e21", type: "interval", params: { notes: [293.66, 369.99] }, question: "¿Qué tercera es esta?", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e22", type: "interval", params: { notes: [466.16, 587.33] }, question: "Escucha en este registro agudo:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e23", type: "interval", params: { notes: [493.88, 523.25] }, question: "Finalizamos con:", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] }
+                        ]
+                    },
+                    {
+                        id: "s2-l2",
+                        title: "Lección 5: Práctica de Cuartas, Quintas y Octavas",
+                        theory: "Seguimos consolidando los intervalos Justos desde diferentes alturas.",
+                        exercises: [
+                            { id: "e24", type: "interval", params: { notes: [349.23, 466.16] }, question: "Identifica este intervalo:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e25", type: "interval", params: { notes: [329.63, 493.88] }, question: "¿Cuál es este sonido?", options: [{ text: "Cuarta Justa", correct: false }, { text: "Quinta Justa", correct: true }] },
+                            { id: "e26", type: "interval", params: { notes: [220.00, 440.00] }, question: "Identifica este salto amplio:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e27", type: "interval", params: { notes: [440.00, 587.33] }, question: "Analiza la distancia:", options: [{ text: "Cuarta Justa", correct: true }, { text: "Quinta Justa", correct: false }] },
+                            { id: "e28", type: "interval", params: { notes: [392.00, 587.33] }, question: "¿Qué salto Justo es?", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] }
+                        ]
+                    },
+                    {
+                        id: "s2-l3",
+                        title: "Lección 6: Práctica de Sextas y Séptimas",
+                        theory: "Acostumbra tu oído a calcular estos saltos grandes partiendo desde notas nuevas.",
+                        exercises: [
+                            { id: "e29", type: "interval", params: { notes: [349.23, 587.33] }, question: "¿Sexta Mayor o Menor?", options: [{ text: "Sexta Mayor", correct: true }, { text: "Sexta Menor", correct: false }] },
+                            { id: "e30", type: "interval", params: { notes: [440.00, 698.46] }, question: "Escucha con atención:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
+                            { id: "e31", type: "interval", params: { notes: [349.23, 659.25] }, question: "Identifica esta séptima:", options: [{ text: "Séptima Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
+                            { id: "e32", type: "interval", params: { notes: [293.66, 523.25] }, question: "¿Qué intervalo genera esta tensión?", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
+                            { id: "e33", type: "interval", params: { notes: [392.00, 698.46] }, question: "Analiza este gran salto:", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Mayor", correct: false }] },
+                            { id: "e34", type: "interval", params: { notes: [329.63, 523.25] }, question: "Último de la semana dos:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: "semana-3",
+                title: "Semana 3: Todos los Intervalos (Dominio)",
+                color: "rose",
+                unlockTime: new Date(2026, 2, 9).getTime(), // 9 de Marzo 2026
+                unlockLabel: "9 Mar",
+                lessons: [
+                    {
+                        id: "s3-l1",
+                        title: "Lección 7: Descensos (Segundas a Quintas)",
+                        theory: "Para dominar realmente los intervalos, debes saber reconocerlos cuando bajan. En esta lección la primera nota será más aguda. Canta las notas hacia abajo en tu mente.",
+                        exercises: [
+                            { id: "e35", type: "interval", params: { notes: [392.00, 349.23] }, question: "Descenso. ¿Qué distancia hay?", options: [{ text: "Segunda Mayor", correct: true }, { text: "Segunda Menor", correct: false }] },
+                            { id: "e36", type: "interval", params: { notes: [523.25, 493.88] }, question: "Escucha este paso hacia abajo:", options: [{ text: "Segunda Menor", correct: true }, { text: "Segunda Mayor", correct: false }] },
+                            { id: "e37", type: "interval", params: { notes: [329.63, 261.63] }, question: "Identifica esta caída:", options: [{ text: "Tercera Mayor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e38", type: "interval", params: { notes: [587.33, 493.88] }, question: "Analiza la cualidad:", options: [{ text: "Tercera Menor", correct: true }, { text: "Tercera Mayor", correct: false }] },
+                            { id: "e39", type: "interval", params: { notes: [392.00, 293.66] }, question: "Intervalo Justo en descenso:", options: [{ text: "Quinta Justa", correct: false }, { text: "Cuarta Justa", correct: true }] },
+                            { id: "e40", type: "interval", params: { notes: [523.25, 349.23] }, question: "Un salto descendente:", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] }
+                        ]
+                    },
+                    {
+                        id: "s3-l2",
+                        title: "Lección 8: Descensos (Sextas a Octavas)",
+                        theory: "Ahora evaluaremos tu capacidad para medir los grandes saltos hacia abajo.",
+                        exercises: [
+                            { id: "e41", type: "interval", params: { notes: [440.00, 261.63] }, question: "Gran descenso. ¿Cuál es?", options: [{ text: "Sexta Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
+                            { id: "e42", type: "interval", params: { notes: [523.25, 329.63] }, question: "Escucha con atención:", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
+                            { id: "e43", type: "interval", params: { notes: [466.16, 261.63] }, question: "Identifica esta distancia:", options: [{ text: "Séptima Mayor", correct: false }, { text: "Séptima Menor", correct: true }] },
+                            { id: "e44", type: "interval", params: { notes: [493.88, 261.63] }, question: "¿Qué intervalo genera esto?", options: [{ text: "Séptima Mayor", correct: true }, { text: "Séptima Menor", correct: false }] },
+                            { id: "e45", type: "interval", params: { notes: [783.99, 392.00] }, question: "Identifica la caída:", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
+                        ]
+                    },
+                    {
+                        id: "s3-l3",
+                        title: "Lección 9: Gran Reto Final",
+                        theory: "En este último bloque pondremos a prueba tu oído con todos los intervalos simples (de 2da a 8va) mezclados en direcciones ascendentes y descendentes.",
+                        exercises: [
+                            { id: "e46", type: "interval", params: { notes: [293.66, 440.00] }, question: "Reto 1 (Ascendente):", options: [{ text: "Quinta Justa", correct: true }, { text: "Cuarta Justa", correct: false }] },
+                            { id: "e47", type: "interval", params: { notes: [698.46, 440.00] }, question: "Reto 2 (Descendente):", options: [{ text: "Sexta Mayor", correct: false }, { text: "Sexta Menor", correct: true }] },
+                            { id: "e48", type: "interval", params: { notes: [329.63, 587.33] }, question: "Reto 3 (Ascendente):", options: [{ text: "Séptima Menor", correct: true }, { text: "Sexta Mayor", correct: false }] },
+                            { id: "e49", type: "interval", params: { notes: [523.25, 392.00] }, question: "Reto 4 (Descendente):", options: [{ text: "Quinta Justa", correct: false }, { text: "Cuarta Justa", correct: true }] },
+                            { id: "e50", type: "interval", params: { notes: [493.88, 523.25] }, question: "Reto 5 (Ascendente):", options: [{ text: "Segunda Menor", correct: true }, { text: "Tercera Menor", correct: false }] },
+                            { id: "e51", type: "interval", params: { notes: [440.00, 349.23] }, question: "Reto 6 (Descendente):", options: [{ text: "Tercera Mayor", correct: true }, { text: "Cuarta Justa", correct: false }] },
+                            { id: "e52", type: "interval", params: { notes: [261.63, 493.88] }, question: "Reto 7 (Ascendente):", options: [{ text: "Séptima Mayor", correct: true }, { text: "Sexta Mayor", correct: false }] },
+                            { id: "e53", type: "interval", params: { notes: [440.00, 220.00] }, question: "Reto 8 (Descendente):", options: [{ text: "Octava Justa", correct: true }, { text: "Quinta Justa", correct: false }] }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        // --- COMPONENTE DE EJERCICIO INDIVIDUAL ---
+        const ExerciseCard = ({ exercise, audioCtx, userProgress, setUserProgress }) => {
+            const [isPlaying, setIsPlaying] = useState(false);
+            const isCompleted = userProgress[exercise.id] !== undefined;
+            const isCorrect = userProgress[exercise.id] === true;
+
+            const playAudio = async () => {
+                if (isPlaying) return;
+                setIsPlaying(true);
+                
+                if (audioCtx.current.state === 'suspended') await audioCtx.current.resume();
+                const now = audioCtx.current.currentTime;
+                let totalTime = 0;
+
+                const playTone = (freq, duration, startTime, volume = 0.12) => {
+                    const osc = audioCtx.current.createOscillator();
+                    const gain = audioCtx.current.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, startTime);
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.linearRampToValueAtTime(volume, startTime + 0.01);
+                    gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+                    osc.connect(gain); gain.connect(audioCtx.current.destination);
+                    osc.start(startTime); osc.stop(startTime + duration);
+                };
+
+                if (exercise.type === 'interval') {
+                    exercise.params.notes.forEach((f, i) => playTone(f, 0.8, now + (i * 0.8)));
+                    totalTime = exercise.params.notes.length * 0.8;
+                } else if (exercise.type === 'chord') {
+                    exercise.params.notes.forEach(f => playTone(f, 2.0, now));
+                    totalTime = 2.0;
+                }
+
+                setTimeout(() => setIsPlaying(false), totalTime * 1000);
+            };
+
+            const handleOptionClick = (correct) => {
+                if (isCompleted) return;
+                setUserProgress(prev => ({ ...prev, [exercise.id]: correct }));
+            };
+
+            return (
+                <div className={`p-5 rounded-2xl border-2 mb-4 transition-all ${isCompleted ? (isCorrect ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50') : 'border-slate-200 bg-white'}`}>
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <button onClick={playAudio} className={`w-14 h-14 shrink-0 rounded-full flex items-center justify-center transition-all shadow-md ${isPlaying ? 'bg-indigo-300 text-indigo-700' : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105'}`}>
+                            <IconPlay />
+                        </button>
+                        <div className="flex-1 w-full">
+                            <p className="font-bold text-slate-800 text-sm mb-3 text-center sm:text-left">{exercise.question}</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {exercise.options.map((opt, i) => {
+                                    let btnClass = "border-slate-200 bg-white text-slate-600 hover:border-indigo-300";
+                                    if (isCompleted) {
+                                        if (opt.correct) btnClass = "border-emerald-500 bg-emerald-500 text-white shadow-md";
+                                        else btnClass = "border-slate-100 bg-slate-50 text-slate-300 opacity-50";
+                                    }
+
+                                    return (
+                                        <button key={i} onClick={() => handleOptionClick(opt.correct)} disabled={isCompleted}
+                                            className={`p-3 rounded-xl border-2 text-sm font-bold transition-all text-center ${btnClass}`}>
+                                            {opt.text}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APLICACIÓN PRINCIPAL ---
+        function App() {
+            const [user, setUser] = useState(null);
+            const [db, setDb] = useState(null);
+            
+            const [currentStep, setCurrentStep] = useState('loading'); 
+            const [studentName, setStudentName] = useState('');
+            
+            const [activeLessonId, setActiveLessonId] = useState("s1-l1");
+            const [sidebarOpen, setSidebarOpen] = useState(false);
+            
+            const [userProgress, setUserProgress] = useState({});
+            
+            const [isSubmitting, setIsSubmitting] = useState(false);
+            const [passInput, setPassInput] = useState('');
+            const [isAuthorized, setIsAuthorized] = useState(false);
+            const [submissions, setSubmissions] = useState([]);
+            
+            const audioCtx = useRef(null);
+
+            useEffect(() => {
+                const init = async () => {
+                    const checkFB = setInterval(async () => {
+                        if (window.FB) {
+                            clearInterval(checkFB);
+                            const { initializeApp, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FB;
+                            try {
+                                const app = initializeApp(activeFirebaseConfig);
+                                const auth = getAuth(app);
+                                const firestore = getFirestore(app);
+                                setDb(firestore);
+                                
+                                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                    await signInWithCustomToken(auth, __initial_auth_token);
+                                } else {
+                                    await signInAnonymously(auth);
+                                }
+                                
+                                onAuthStateChanged(auth, setUser);
+                                setCurrentStep('login');
+                            } catch (e) { console.error(e); setCurrentStep('error'); }
+                        }
+                    }, 500);
+                };
+                init();
+            }, []);
+
+            useEffect(() => {
+                if (!db || !user || !isAuthorized || currentStep !== 'teacher') return;
+                const { collection, onSnapshot } = window.FB;
+                const appId = typeof __app_id !== 'undefined' ? __app_id : examId;
+                const resultsRef = collection(db, 'artifacts', appId, 'public', 'data', 'progress');
+                
+                const unsubscribe = onSnapshot(resultsRef, (snapshot) => {
+                    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setSubmissions(docs.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)));
+                });
+                return () => unsubscribe();
+            }, [db, user, isAuthorized, currentStep]);
+
+            const initAudio = () => {
+                if (!audioCtx.current) audioCtx.current = new (window.AudioContext || window.webkitAudioContext)();
+            };
+
+            const enterMethod = () => {
+                initAudio();
+                setCurrentStep('method');
+            };
+
+            const saveProgress = async () => {
+                if (isSubmitting || !user) return;
+                setIsSubmitting(true);
+                
+                // Calcular puntaje basado SOLO en las lecciones desbloqueadas hasta hoy
+                const now = Date.now();
+                const isPreviewMode = studentName.trim().toUpperCase() === 'PROFESOR' || studentName.trim() === '7777';
+                const unlockedLevels = curriculum.filter(lvl => isPreviewMode || now >= lvl.unlockTime);
+                const currentWeekLevel = unlockedLevels[unlockedLevels.length - 1]; // La semana más reciente
+                
+                const totalUnlockedExercises = unlockedLevels.flatMap(lvl => lvl.lessons).flatMap(l => l.exercises).length;
+                const correctAnswers = Object.values(userProgress).filter(v => v === true).length;
+                const attempted = Object.keys(userProgress).length;
+                
+                try {
+                    const { collection, addDoc, serverTimestamp } = window.FB;
+                    const appId = typeof __app_id !== 'undefined' ? __app_id : examId;
+                    
+                    await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'progress'), {
+                        name: studentName,
+                        correct: correctAnswers,
+                        attempted: attempted,
+                        total: totalUnlockedExercises,
+                        scoreText: `${correctAnswers}/${totalUnlockedExercises}`,
+                        currentWeek: currentWeekLevel ? currentWeekLevel.title : "Semana 1",
+                        timestamp: serverTimestamp(),
+                        userId: user.uid
+                    });
+                    
+                    alert(`¡Progreso de la ${currentWeekLevel ? currentWeekLevel.title : 'semana'} guardado con éxito!`);
+                } catch (e) { 
+                    alert("Error al guardar. Asegúrate de tener conexión."); 
+                    console.error(e); 
+                } finally { 
+                    setIsSubmitting(false); 
+                }
+            };
+
+            // Encontrar la lección activa
+            let activeLesson = null;
+            curriculum.forEach(level => {
+                const lesson = level.lessons.find(l => l.id === activeLessonId);
+                if (lesson) activeLesson = lesson;
+            });
+
+            if (currentStep === 'error') return <div className="min-h-screen flex items-center justify-center bg-slate-50 font-bold text-slate-600">Error de conexión a la base de datos.</div>;
+            if (currentStep === 'loading') return <div className="min-h-screen flex items-center justify-center bg-slate-50 font-bold text-indigo-400">CARGANDO MÉTODO...</div>;
+
+            // --- PANTALLA DE INGRESO ---
+            if (currentStep === 'login') {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-4 animate-in">
+                        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100">
+                            <div className="bg-indigo-600 p-8 text-white text-center relative">
+                                <button onClick={() => setCurrentStep('teacher')} className="absolute top-4 right-4 p-2 bg-indigo-500 rounded-full hover:bg-indigo-400 transition-colors"><IconUser /></button>
+                                <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4 backdrop-blur-sm"><IconBook /></div>
+                                <h1 className="text-2xl font-black uppercase tracking-tight leading-tight">Método de<br/>Dictado Online</h1>
+                            </div>
+                            <div className="p-8 space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest ml-1">Estudiante</label>
+                                    <input type="text" placeholder="Tu nombre y apellidos" value={studentName} onChange={(e) => setStudentName(e.target.value)}
+                                        className="w-full p-4 border-2 border-slate-100 rounded-2xl focus:border-indigo-500 outline-none font-bold text-slate-800 transition-colors" />
+                                </div>
+                                <button onClick={enterMethod} disabled={!studentName.trim()}
+                                    className="w-full bg-indigo-600 disabled:bg-slate-200 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 active:scale-95 transition-all">
+                                    Abrir Libro
+                                </button>
+                                <p className="text-center text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4">Prof Johan Parilli</p>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- PANEL DEL PROFESOR ---
+            if (currentStep === 'teacher') {
+                return (
+                    <div className="min-h-screen flex items-center justify-center p-4 animate-in">
+                        <div className="w-full max-w-xl bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 min-h-[500px] flex flex-col">
+                            <div className="bg-slate-900 p-6 text-white flex justify-between items-center">
+                                <div>
+                                    <h1 className="text-lg font-black uppercase tracking-widest text-indigo-400">Portal Docente</h1>
+                                    <p className="text-xs text-slate-400 font-medium">Cátedra de Lenguaje Musical - Prof Johan Parilli</p>
+                                </div>
+                                <button onClick={() => setCurrentStep('login')} className="text-xs font-bold text-slate-400 hover:text-white uppercase">Cerrar</button>
+                            </div>
+                            
+                            <div className="p-8 flex-1 flex flex-col">
+                                {!isAuthorized ? (
+                                    <div className="my-auto space-y-6 max-w-xs mx-auto w-full">
+                                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-300"><IconLock size={32} /></div>
+                                        <input type="password" placeholder="Clave de acceso" value={passInput} onChange={(e) => setPassInput(e.target.value)}
+                                            className="w-full p-4 border-2 border-slate-100 rounded-2xl text-center font-bold outline-none focus:border-slate-400" />
+                                        <button onClick={() => { if(passInput === CLAVE_PROFESOR) setIsAuthorized(true); else alert("Clave incorrecta"); }}
+                                            className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black uppercase tracking-widest shadow-md">Acceder</button>
+                                    </div>
+                                ) : (
+                                    <div className="flex-1 flex flex-col h-full">
+                                        <div className="flex justify-between items-end mb-4 border-b border-slate-100 pb-4">
+                                            <h2 className="font-bold text-slate-800">Progreso de Alumnos</h2>
+                                            <span className="text-xs font-bold bg-slate-100 text-slate-500 px-3 py-1 rounded-full">{submissions.length} registros</span>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
+                                            {submissions.length === 0 ? <p className="text-center py-10 text-slate-400 text-sm">Sin registros.</p> : 
+                                                submissions.map(res => (
+                                                    <div key={res.id} className="bg-slate-50 p-4 rounded-2xl flex justify-between items-center border border-slate-100">
+                                                        <div>
+                                                            <p className="font-bold text-slate-800 text-sm">{res.name}</p>
+                                                            <div className="flex items-center gap-2 mt-1">
+                                                                <span className="text-[9px] bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded uppercase font-black">{res.currentWeek || 'Semana 1'}</span>
+                                                                <span className="text-[9px] text-slate-400 font-bold uppercase">{res.timestamp?.toDate().toLocaleString() || 'Reciente'}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <div className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-lg font-black text-sm">{res.scoreText} Aciertos</div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            }
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            // --- VISTA PRINCIPAL DEL MÉTODO (LIBRO) ---
+            return (
+                <div className="min-h-screen flex flex-col md:flex-row bg-slate-50 animate-in">
+                    
+                    {/* Botón menú móvil */}
+                    <div className="md:hidden bg-white border-b p-4 flex justify-between items-center sticky top-0 z-20 shadow-sm">
+                        <div className="font-black text-indigo-600 uppercase tracking-widest text-sm flex items-center gap-2"><IconBook/> Dictado Online</div>
+                        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 bg-slate-100 rounded-lg text-slate-600"><IconMenu /></button>
+                    </div>
+
+                    {/* SIDEBAR (Índice) */}
+                    <div className={`${sidebarOpen ? 'block' : 'hidden'} md:block w-full md:w-80 bg-white border-r border-slate-200 h-screen sticky top-0 overflow-y-auto z-10 shrink-0 flex flex-col`}>
+                        <div className="p-6 hidden md:block">
+                            <h2 className="font-black text-indigo-600 uppercase tracking-widest text-lg flex items-center gap-2"><IconBook/> Dictado Online</h2>
+                            <p className="text-xs font-bold text-slate-400 mt-1 uppercase truncate">{studentName}</p>
+                        </div>
+                        
+                        <div className="flex-1 px-4 pb-6">
+                            {curriculum.map((level) => {
+                                const isPreviewMode = studentName.trim().toUpperCase() === 'PROFESOR' || studentName.trim() === '7777';
+                                const isLocked = !isPreviewMode && Date.now() < level.unlockTime;
+                                
+                                return (
+                                    <div key={level.id} className={`mb-6 ${isLocked ? 'opacity-60' : ''}`}>
+                                        <h3 className={`text-xs font-black uppercase tracking-widest mb-3 pl-2 flex items-center justify-between ${isLocked ? 'text-slate-400' : `text-${level.color}-600`}`}>
+                                            <span>{level.title}</span>
+                                            {isLocked && <span className="text-[9px] bg-slate-200 text-slate-500 px-2 py-0.5 rounded-full flex items-center gap-1"><IconLock size={10}/> {level.unlockLabel}</span>}
+                                        </h3>
+                                        <div className="space-y-1">
+                                            {level.lessons.map(lesson => {
+                                                const isActive = activeLessonId === lesson.id && !isLocked;
+                                                const exIds = lesson.exercises.map(e => e.id);
+                                                const completed = exIds.filter(id => userProgress[id] !== undefined).length;
+                                                const isDone = completed === exIds.length && exIds.length > 0;
+
+                                                return (
+                                                    <button key={lesson.id} 
+                                                        disabled={isLocked}
+                                                        onClick={() => { setActiveLessonId(lesson.id); setSidebarOpen(false); }}
+                                                        className={`w-full text-left p-3 rounded-xl transition-all flex items-center justify-between text-sm font-bold
+                                                            ${isActive ? `bg-${level.color}-50 text-${level.color}-700 border border-${level.color}-100` : 'text-slate-600 border border-transparent'}
+                                                            ${!isLocked && !isActive ? 'hover:bg-slate-50' : ''}
+                                                            ${isLocked ? 'cursor-not-allowed' : ''}
+                                                        `}>
+                                                        <span className="truncate pr-2">{lesson.title}</span>
+                                                        {isDone && !isLocked && <span className={`text-${level.color}-500 shrink-0`}><IconCheck /></span>}
+                                                        {isLocked && <span className="text-slate-300 shrink-0"><IconLock size={14}/></span>}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        
+                        {/* Botón Guardar Progreso */}
+                        <div className="p-4 border-t bg-slate-50 mt-auto">
+                            <button onClick={saveProgress} disabled={isSubmitting} className="w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-md hover:bg-slate-800 transition-colors flex justify-center items-center gap-2">
+                                {isSubmitting ? <IconRefresh /> : "Guardar mi progreso"}
+                            </button>
+                            <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-3">Prof Johan Parilli</p>
+                        </div>
+                    </div>
+
+                    {/* ÁREA DE CONTENIDO (Lección activa) */}
+                    <div className="flex-1 overflow-y-auto h-screen relative scroll-smooth p-4 md:p-10">
+                        {activeLesson && (
+                            <div className="max-w-3xl mx-auto animate-in">
+                                {/* Encabezado de la lección */}
+                                <div className="mb-8">
+                                    <h1 className="text-3xl md:text-4xl font-black text-slate-800 mb-4 leading-tight">{activeLesson.title}</h1>
+                                    <div className="p-5 md:p-6 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                                        <p className="text-slate-600 leading-relaxed font-medium md:text-lg">{activeLesson.theory}</p>
+                                    </div>
+                                </div>
+
+                                {/* Lista de Ejercicios */}
+                                <div className="space-y-6">
+                                    <h3 className="font-black uppercase tracking-widest text-slate-400 text-sm border-b pb-2">Ejercicios Prácticos</h3>
+                                    
+                                    {activeLesson.exercises.map((ex, index) => (
+                                        <ExerciseCard 
+                                            key={ex.id} 
+                                            exercise={ex} 
+                                            audioCtx={audioCtx} 
+                                            userProgress={userProgress} 
+                                            setUserProgress={setUserProgress} 
+                                        />
+                                    ))}
+                                </div>
+                                
+                                {/* Navegación inferior rápida */}
+                                <div className="mt-12 pt-8 border-t flex justify-end">
+                                    <button onClick={() => window.scrollTo(0,0)} className="text-sm font-bold text-slate-400 uppercase tracking-widest hover:text-indigo-600 transition-colors">Volver arriba ↑</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
