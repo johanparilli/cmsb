@@ -7,36 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-        
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6;
         }
-        
-        /* Color principal: azul oscuro de Tailwind slate-900 */
         .bg-custom-dark {
             background-color: #0f172a;
         }
-        
-        /* Color de acento: dorado de Tailwind amber-400 */
         .text-custom-gold {
             color: #facc15;
         }
-        
-        /* Estilos específicos para el botón de la encuesta destacada */
         .encuesta-btn-visible {
-            background-color: #facc15 !important; /* Fondo Dorado Forzado */
-            color: #000000 !important; /* Texto Negro Forzado */
-            /* Sombra más dramática */
+            background-color: #facc15 !important;
+            color: #000000 !important;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -2px rgba(0, 0, 0, 0.4) !important; 
             transition: all 0.3s ease-in-out;
         }
         .encuesta-btn-visible:hover {
             transform: scale(1.05);
-            background-color: #fcd34d !important; /* Dorado más claro al hacer hover */
+            background-color: #fcd34d !important;
         }
-        
-        /* Estilo para asegurar que el iframe se vea bien */
         .iframe-container {
             max-width: 800px;
             margin-left: auto;
@@ -44,9 +34,8 @@
         }
     </style>
 </head>
-<body class="text-slate-800 flex flex-col min-h-screen">
+<body class="text-slate-800">
 
-    <!-- Header / Encabezado -->
     <header class="bg-custom-dark text-white py-6 shadow-lg sticky top-0 z-10">
         <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
             <h1 class="text-3xl font-extrabold mb-2 md:mb-0">Cátedras del Prof. Johan Parilli</h1>
@@ -54,15 +43,14 @@
                 <ul class="flex space-x-6 text-sm font-semibold">
                     <li><a href="#inicio" class="text-custom-gold hover:text-white transition-colors">Inicio</a></li>
                     <li><a href="#catedras" class="hover:text-custom-gold transition-colors">Cátedras</a></li>
-                    <li><a href="#encuesta" class="hover:text-custom-gold transition-colors font-extrabold">Encuesta</a></li>
+                    <li><a href="#admin-links" class="hover:text-custom-gold transition-colors">Enlaces Web</a></li>
                     <li><a href="#contacto" class="hover:text-custom-gold transition-colors">Contacto</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
-    <main class="flex-grow">
-        <!-- Hero Section / Sección Principal -->
+    <main>
         <section id="inicio" class="bg-slate-900 text-white py-20 md:py-32">
             <div class="container mx-auto px-4 text-center">
                 <h2 class="text-4xl md:text-6xl font-black text-custom-gold mb-4">
@@ -71,40 +59,68 @@
                 <p class="text-lg md:text-xl text-slate-300 mb-8 max-w-3xl mx-auto">
                     Acceso a los espacios virtuales del profesor Johan Parilli.
                 </p>
-                <a href="#catedras" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105 inline-block">
+                <a href="#catedras" class="bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-xl hover:bg-yellow-300 transition-colors transform hover:scale-105">
                     Explora Ahora
                 </a>
             </div>
         </section>
-        
-        <!-- Cátedras Section / Sección de Asignaturas (Solo Lenguaje Musical 1) -->
-        <section id="catedras" class="py-16 md:py-24 bg-white">
-            <div class="container mx-auto px-4">
-                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
-                
-                <!-- Contenedor centrado para una sola tarjeta -->
-                <div class="max-w-md mx-auto">
-                    
-                    <!-- Lenguaje Musical 1 Card -->
-                    <div class="bg-slate-50 p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 text-center">
-                        <h4 class="text-3xl font-bold text-custom-dark mb-4">Lenguaje Musical 1</h4>
-                        <p class="text-gray-600 text-lg mb-6">
-                            Descubre los fundamentos de la teoría musical, la lectura y el desarrollo auditivo.
-                        </p>
-                        <!-- Botón de acceso -->
-                        <div>
-                            <a href="https://t.me/+cCfASiBGA3Q1ODlh" target="_blank" class="inline-flex items-center space-x-2 bg-custom-gold text-slate-900 font-bold py-3 px-8 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">
-                                <span>Unirse al Canal de Telegram</span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                            </a>
-                        </div>
-                    </div>
 
+        <section id="admin-links" class="py-12 bg-slate-100 border-b border-gray-300">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-inner border border-dashed border-slate-400">
+                    <h3 class="text-xl font-bold mb-4 text-slate-800 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        Panel de Enlaces Directos (Para el Profesor)
+                    </h3>
+                    <p class="text-sm text-slate-600 mb-4">Haz clic derecho en cualquier enlace y selecciona <strong>"Copiar dirección de enlace"</strong> para compartirlo rápidamente.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <a href="encuesta.html" class="p-3 bg-white border border-gray-200 rounded hover:bg-blue-50 text-blue-700 font-medium text-center transition-colors">📄 Encuesta de Inicio</a>
+                        <a href="diagnosticodicatado.html" class="p-3 bg-white border border-gray-200 rounded hover:bg-blue-50 text-blue-700 font-medium text-center transition-colors">🎹 Diagnóstico Dictado</a>
+                        <a href="dictadointervalosimples.html" class="p-3 bg-white border border-gray-200 rounded hover:bg-blue-50 text-blue-700 font-medium text-center transition-colors">👂 Dictado Intervalos</a>
+                    </div>
                 </div>
             </div>
         </section>
         
-        <!-- Sección de Encuesta (BANNER DESTACADO para enlace externo) -->
+        <section id="catedras" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-4">
+                <h3 class="text-3xl md:text-4xl font-bold text-center mb-12 text-slate-900">Asignaturas</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 1</h4>
+                        <p class="text-gray-600">Descubre los fundamentos de la teoría musical, la lectura y el desarrollo auditivo.</p>
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/lenguaje1" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">Acceder</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Lenguaje Musical 2</h4>
+                        <p class="text-gray-600">Amplía tus habilidades de lectura, audición y entonación.</p>
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/lenguaje2" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">Acceder</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Historia de la música 1</h4>
+                        <p class="text-gray-600">Explora el origen y evolución de la música desde sus raíces hasta el renacimiento.</p>
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/historia1" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">Acceder</a>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 p-6 rounded-xl shadow-md hover:shadow-xl transition-shadow duration-300 transform hover:-translate-y-1 border border-gray-100">
+                        <h4 class="text-2xl font-bold text-custom-dark mb-2">Textura Musical 1</h4>
+                        <p class="text-gray-600">Estudio de la armonía a nivel más avanzado.</p>
+                        <div class="mt-4">
+                            <a href="https://clases.johanparilli.com/b/texturamusical1" target="_blank" class="inline-block bg-custom-gold text-slate-900 font-bold py-2 px-6 rounded-lg shadow-md hover:bg-yellow-300 transition-colors">Acceder</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
         <section id="encuesta" class="bg-custom-dark text-white py-12 md:py-20 text-center shadow-xl">
             <div class="container mx-auto px-4">
                 <h3 class="text-3xl md:text-4xl font-bold mb-4 text-custom-gold">
@@ -113,24 +129,13 @@
                 <p class="text-lg md:text-xl max-w-2xl mx-auto mb-8 text-slate-300">
                     Ayúdanos a prepararnos mejor para el nuevo ciclo académico. Haz clic abajo para acceder al formulario externo.
                 </p>
-                <!-- Botón con la clase personalizada para forzar colores y añadir hover/transform -->
-                <a href="https://cmsb.johanparilli.com/encuesta.html" class="
-                    encuesta-btn-visible 
-                    font-black 
-                    py-3 px-10 
-                    rounded-lg 
-                    inline-flex items-center justify-center space-x-2 
-                    text-lg 
-                    transition-all duration-300
-                ">
+                <a href="https://cmsb.johanparilli.com/encuesta.html" class="encuesta-btn-visible font-black py-3 px-10 rounded-lg inline-flex items-center justify-center space-x-2 text-lg transition-all duration-300">
                     <span>Acceder a la Encuesta</span>
-                    <!-- Icono de formulario (lucide-react equivalente) -->
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="15" y1="15" x2="9" y2="15"></line></svg>
                 </a>
             </div>
         </section>
 
-        <!-- Contact Section / Sección de Contacto (Contiene el formulario de Google Forms de contacto) -->
         <section id="contacto" class="py-16 md:py-24 bg-gray-200">
             <div class="container mx-auto px-4">
                 <h3 class="text-3xl md:text-4xl font-bold text-center mb-6 text-slate-900">Formulario de Contacto y Consultas</h3>
@@ -138,33 +143,17 @@
                     Si tienes preguntas específicas sobre las asignaturas o necesitas contactar al profesor, puedes hacerlo a través del siguiente formulario.
                 </p>
                 <div class="iframe-container bg-white p-4 md:p-8 rounded-xl shadow-2xl border border-gray-300">
-                    <!-- Formulario de Google Forms para CONTACTO -->
-                    <iframe 
-                        src="https://docs.google.com/forms/d/e/1FAIpQLSf6mYdXRqSAyycwrLGgsuNfg4dqmPDH2NzSOFsKuNHEsfoDvQ/viewform?embedded=true" 
-                        width="100%" 
-                        height="896" 
-                        frameborder="0" 
-                        marginheight="0" 
-                        marginwidth="0"
-                        title="Formulario de Contacto del Profesor">
-                        Cargando…
-                    </iframe>
+                    <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSf6mYdXRqSAyycwrLGgsuNfg4dqmPDH2NzSOFsKuNHEsfoDvQ/viewform?embedded=true" width="100%" height="896" frameborder="0" marginheight="0" marginwidth="0" title="Formulario de Contacto del Profesor">Cargando…</iframe>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- Footer / Pie de página -->
     <footer class="bg-custom-dark text-white py-6 mt-12">
         <div class="container mx-auto px-4 text-center text-sm">
-            <p>&copy; <span id="current-year"></span> Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli. Todos los derechos reservados.</p>
+            <p>&copy; 2025 Conservatorio de Música Simón Bolívar. Cátedras del Prof. Johan Parilli. Todos los derechos reservados.</p>
         </div>
     </footer>
-
-    <script>
-        // Script para actualizar el año automáticamente
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-    </script>
 
 </body>
 </html>
